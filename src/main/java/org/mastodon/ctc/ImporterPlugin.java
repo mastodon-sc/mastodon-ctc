@@ -46,7 +46,7 @@ import org.mastodon.collection.RefMaps;
 import de.mpicbg.ulman.ctc.Mastodon.util.ButtonHandler;
 import de.mpicbg.ulman.ctc.Mastodon.util.ImgProviders;
 import de.mpicbg.ulman.ctc.Mastodon.auxPlugins.FileTemplateProvider;
-import de.mpicbg.ulman.ctc.workers.TrackRecords;
+import net.celltrackingchallenge.measures.TrackRecords;
 
 @Plugin( type = Command.class, name = "CTC format importer @ Mastodon" )
 public class ImporterPlugin

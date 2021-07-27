@@ -46,7 +46,7 @@ import org.mastodon.collection.RefMaps;
 import de.mpicbg.ulman.ctc.Mastodon.util.ButtonHandler;
 import de.mpicbg.ulman.ctc.Mastodon.util.ParallelImgSaver;
 import de.mpicbg.ulman.ctc.Mastodon.auxPlugins.TRAMarkersProvider;
-import de.mpicbg.ulman.ctc.workers.TrackRecords;
+import net.celltrackingchallenge.measures.TrackRecords;
 
 @Plugin( type = Command.class, name = "CTC format exporter @ Mastodon" )
 public class ExporterPlugin <T extends NativeType<T> & RealType<T>>
