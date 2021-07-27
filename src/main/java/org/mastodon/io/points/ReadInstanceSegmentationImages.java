@@ -1,66 +1,35 @@
-/*
- * BSD 2-Clause License
- *
- * Copyright (c) 2019, Vladimír Ulman
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-package org.mastodon.ctc;
+package org.mastodon.io.points;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.JFrame;
 import javax.swing.BoxLayout;
 
+import bdv.viewer.SourceAndConverter;
 import org.jhotdraw.samples.svg.gui.ProgressIndicator;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.concurrent.Future;
-import java.util.concurrent.ExecutionException;
-
-import org.scijava.log.LogService;
+import org.mastodon.ui.util.FileChooser;
 import org.scijava.command.Command;
 import org.scijava.command.CommandModule;
 import org.scijava.command.CommandService;
 import org.scijava.command.DynamicCommand;
 import org.scijava.module.MutableModuleItem;
+import org.scijava.log.LogService;
 import org.scijava.plugin.Plugin;
 import org.scijava.plugin.Parameter;
 
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.IterableInterval;
-import net.imglib2.RealInterval;
+import net.imglib2.RandomAccessibleInterval;
 
-import bdv.viewer.SourceAndConverter;
 import net.imglib2.Cursor;
+import net.imglib2.RandomAccess;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.LinAlgHelpers;
+import net.imglib2.view.Views;
 
-import org.mastodon.ui.util.FileChooser;
-import org.mastodon.ui.util.ExtensionFileFilter;
 import org.mastodon.mamut.MamutAppModel;
 import org.mastodon.model.AbstractModelImporter;
 import org.mastodon.mamut.model.Spot;
@@ -70,13 +39,18 @@ import org.mastodon.mamut.model.ModelGraph;
 import org.mastodon.collection.IntRefMap;
 import org.mastodon.collection.RefMaps;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.concurrent.Future;
+import java.util.concurrent.ExecutionException;
+
 import org.mastodon.ctc.util.ButtonHandler;
 import org.mastodon.ctc.util.ImgProviders;
 import org.mastodon.ctc.auxPlugins.FileTemplateProvider;
-import net.celltrackingchallenge.measures.TrackRecords;
 
-@Plugin( type = Command.class, name = "CTC format importer @ Mastodon" )
-public class ImporterPlugin
+@Plugin( type = Command.class, name = "Instance segmentation importer @ Mastodon" )
+public class ReadInstanceSegmentationImages
 extends DynamicCommand
 {
 	// ----------------- necessary internal references -----------------
@@ -87,7 +61,7 @@ extends DynamicCommand
 	private MamutAppModel appModel;
 
 	// ----------------- where to read data in -----------------
-	@Parameter(label = "From where to import CTC tracking:",
+	@Parameter(label = "From where to take instance segmentation:",
 	           initializer = "encodeImgSourceChoices", choices = {} )
 	public String imgSourceChoice = "";
 
@@ -125,18 +99,15 @@ extends DynamicCommand
 		this.unresolveInput("timeTill");
 	}
 
-	private String inputTxtFile = null;
 	ImgProviders.ImgProvider decodeImgSourceChoices()
 	{
 		if (imgSourceChoice.startsWith("images in own"))
 		{
-			//ask for folder, filename type and lineage file
-			Future<CommandModule> files = this.getContext().getService(CommandService.class).run(FileTemplateProvider.class,true);
+			//ask for folder and filename type
+			Future<CommandModule> files = this.getContext()
+					.getService(CommandService.class)
+					.run(FileTemplateProvider.class,true,"filenameTXT","notUsedThisTime");
 			try {
-				inputTxtFile = ((File)files.get().getInput("containingFolder")).getAbsolutePath()
-					+File.separator
-					+((String)files.get().getInput("filenameTXT"));
-
 				return new ImgProviders.ImgProviderFromDisk(
 					((File)files.get().getInput("containingFolder")).getAbsolutePath(),
 					(String)files.get().getInput("filenameTemplate"),timeFrom);
@@ -161,28 +132,15 @@ extends DynamicCommand
 
 			if (imgSourceChoice.startsWith("CTC: GT"))
 			{
-				inputTxtFile = selectedFolder.getAbsolutePath()+File.separator+"TRA"+File.separator+"man_track.txt";
 				return new ImgProviders.ImgProviderFromDisk(selectedFolder.getAbsolutePath()+File.separator+"TRA","man_track%03d.tif",timeFrom);
 			}
 			else
 			{
-				inputTxtFile = selectedFolder.getAbsolutePath()+File.separator+"res_track.txt";
 				return new ImgProviders.ImgProviderFromDisk(selectedFolder.getAbsolutePath(),"mask%03d.tif",timeFrom);
 			}
 		}
 		else
 		{
-			File selectedFile = FileChooser.chooseFile(null, null,
-				new ExtensionFileFilter("txt"),
-				"Choose folder with the images in the CTC format:",
-				FileChooser.DialogType.LOAD,
-				FileChooser.SelectionMode.FILES_ONLY);
-
-			//cancel button ?
-			if (selectedFile == null) return null;
-
-			inputTxtFile = selectedFile.getAbsolutePath();
-
 			//some project's view, have to find the right one
 			for (int i = 0; i < choices.size(); ++i)
 			if (imgSourceChoice.startsWith(choices.get(i)))
@@ -194,10 +152,24 @@ extends DynamicCommand
 	}
 
 	// ----------------- how to read data in -----------------
+	@Parameter(label = "Link spots that come from the same labels:",
+	           description = "This option assumes that labels from the input images are unique for one tracklet.")
+	boolean shouldLinkSameLabels = false;
+
+	@Parameter(label = "Link spots whose labels overlap:",
+	           description = "This option assumes that geometry of the labels from one tracklet is not changing dramatically.")
+	boolean shouldLinkOverlappingLabels = false;
+
+	@Parameter(label = "If overlap is checked: Label's minimal intersection size for overlap:",
+	           description = "If (intersection volume / label's volume) >= this threshold, then link is made.",
+	           min = "0.0", max = "1.0", stepSize = "0.1")
+	double overlapThreshold = 0.3;
+
 	@Parameter(label = "Checks if created spots overlap with their markers significantly:")
 	boolean doMatchCheck = true;
 
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public void run()
 	{
@@ -207,7 +179,7 @@ extends DynamicCommand
 		logService.info("Considering resolution: "+imgSource.getVoxelDimensions().dimension(0)
 		               +" x "+imgSource.getVoxelDimensions().dimension(1)
 		               +" x "+imgSource.getVoxelDimensions().dimension(2)
-		               +" "+imgSource.getVoxelDimensions().unit()+"/px");
+		               +" px/"+imgSource.getVoxelDimensions().unit());
 
 		//define some shortcut variables
 		final Model model = appModel.getModel();
@@ -215,19 +187,6 @@ extends DynamicCommand
 
 		//debug report
 		logService.info("Time points span is   : "+timeFrom+"-"+timeTill);
-		logService.info("Supp. lineage file is : "+inputTxtFile);
-
-		//load metadata with the lineages
-		final TrackRecords tracks = new TrackRecords();
-		try
-		{
-			tracks.loadTrackFile(inputTxtFile, logService);
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-			throw new IllegalArgumentException("Error reading the lineage file "+inputTxtFile);
-		}
 
 		//PROGRESS BAR stuff
 		final ButtonHandler pbtnHandler = new ButtonHandler();
@@ -238,7 +197,7 @@ extends DynamicCommand
 		pbtn.addActionListener(pbtnHandler);
 
 		//populate the bar and show it
-		final JFrame pbframe = new JFrame("CTC Importer Progress Bar @ Mastodon");
+		final JFrame pbframe = new JFrame("Importer Progress Bar @ Mastodon");
 		pbframe.setLayout(new BoxLayout(pbframe.getContentPane(), BoxLayout.Y_AXIS));
 		pbframe.add(pbar);
 		pbframe.add(pbtn);
@@ -267,26 +226,31 @@ extends DynamicCommand
 			resSqLen[i] *= resSqLen[i];
 		}
 
-		recentlyUsedSpots = RefMaps.createIntRefMap( modelGraph.vertices(), -1, 500 );
+		prevFrameSpots = RefMaps.createIntRefMap( modelGraph.vertices(), -1, 500 );
+		currFrameSpots = RefMaps.createIntRefMap( modelGraph.vertices(), -1, 500 );
 		linkRef = modelGraph.edgeRef();
 		nSpot = modelGraph.vertices().createRef();
 		oSpot = modelGraph.vertices().createRef();
 
+		RandomAccessibleInterval<?> prevImg=null, currImg=null;
+
 		try
 		{
+			//iterate through time points and extract spots
+			for (int time = timeFrom; time <= timeTill && !pbtnHandler.buttonPressed(); ++time)
+			{
+				logService.info("Processing time point : "+time);
 
-		//iterate through time points and extract spots
-		for (int time = timeFrom; time <= timeTill && isCanceled() == false && !pbtnHandler.buttonPressed(); ++time)
-		{
-			logService.info("Processing time point : "+time);
+				//NB: don't hold (and block) the extra (prev) image if it is not necessary
+				if (shouldLinkOverlappingLabels) prevImg = currImg;
+				currImg = imgSource.getImage(time);
 
-			imgSource.getSourceTransform(time, coordTransImg2World);
-			readSpots( (IterableInterval)imgSource.getImage(time),
-			           time, coordTransImg2World, modelGraph, tracks );
+				imgSource.getSourceTransform(time, coordTransImg2World);
+				readSpots( (IterableInterval)Views.iterable( currImg ), (RandomAccessibleInterval)prevImg,
+							  time, coordTransImg2World, modelGraph );
 
-			pbar.setProgress(time+1-timeFrom);
-		}
-
+				pbar.setProgress(time+1-timeFrom);
+			}
 		}
 		finally
 		{
@@ -309,7 +273,7 @@ extends DynamicCommand
 	private double[] resSqLen;      //aux 1px square lengths
 	private double   resVolume;     //aux 1px volume
 	private double   resArea;       //aux 1px xy-plane area
-	private IntRefMap< Spot > recentlyUsedSpots;
+	private IntRefMap< Spot > prevFrameSpots,currFrameSpots;
 	private Spot nSpot,oSpot;       //spots references
 	private Link linkRef;           //link reference
 	final private double[][] cov = new double[3][3];
@@ -317,9 +281,11 @@ extends DynamicCommand
 	final private double[][] Tc  = new double[3][3];
 
 	private <T extends NativeType<T> & RealType<T>>
-	void readSpots(final IterableInterval<T> img, final int time,
+	void readSpots(final IterableInterval<T> img,
+	               final RandomAccessibleInterval<T> pImg,
+	               final int time,
 	               final AffineTransform3D transform,
-	               final ModelGraph modelGraph, final TrackRecords tracks)
+	               final ModelGraph modelGraph)
 	{
 		//description of a marker:
 		class Marker
@@ -340,7 +306,7 @@ extends DynamicCommand
 			long markerOverlap;
 
 			//accumulated coordinates
-			double[] accCoords;
+			final double[] accCoords;
 
 			//z-coordinate span
 			int minZ=inImgDims < 3 ? 0 : Integer.MAX_VALUE;
@@ -421,29 +387,65 @@ extends DynamicCommand
 
 			//System.out.println("adding spot at "+Util.printCoordinates(m.accCoords)+" with label="+label);
 			nSpot = modelGraph.addVertex( nSpot ).init( time, m.accCoords, cov );
+			nSpot.setLabel(""+label);
 
-			if (recentlyUsedSpots.containsKey(label))
+			if (shouldLinkSameLabels && prevFrameSpots.containsKey(label))
 			{
 				//was detected also in the previous frame
 				//System.out.println("linking spot with its previous occurrence");
 
-				recentlyUsedSpots.get(label, oSpot);
+				prevFrameSpots.get(label, oSpot);
 				modelGraph.addEdge( oSpot, nSpot, linkRef ).init();
 			}
-			else
-			{
-				//is detected for the first time: is it after a division?
-				if (recentlyUsedSpots.containsKey(tracks.getParentOfTrack(label)))
-				{
-					//System.out.println("linking spot with its mother "+t.m_parent);
 
-					recentlyUsedSpots.get(tracks.getParentOfTrack(label), oSpot);
-					modelGraph.addEdge( oSpot, nSpot, linkRef ).init();
+			if (shouldLinkOverlappingLabels && pImg != null)
+			{
+				//find and link to all markers from the pImg with which
+				//this marker has overlap larger than 'overlapThreshold'
+
+				//list of sizes of observed intersections
+				HashMap<Integer,Long> intSizes = new HashMap<>(50);
+
+				//sweeping vars
+				voxelCursor.reset();
+				final RandomAccess<T> voxelAccessor = pImg.randomAccess();
+
+				//determines sizes of all intersections
+				while (voxelCursor.hasNext())
+				{
+					if (voxelCursor.next().getRealFloat() == label)
+					{
+						//found some intersecting label from pImg
+						voxelAccessor.setPosition( voxelCursor );
+						final int oLabel = (int)voxelAccessor.get().getRealFloat();
+
+						//update the intersections counter (on non-background voxels)
+						if (oLabel > 0)
+						{
+							intSizes.putIfAbsent(oLabel, 0L);
+							intSizes.replace(oLabel, intSizes.get(oLabel)+1);
+						}
+					}
+				}
+
+				//adds links to spots that represent markers with considerable overlap
+				for (Integer oLabel : intSizes.keySet())
+				{
+					//System.out.println("marker "+label+" intersects with pMarker "+oLabel+" (overlap size="+intSizes.get(oLabel)+")");
+					if ((double)intSizes.get(oLabel)/(double)m.size >= overlapThreshold)
+					{
+						//this overlap qualifies size-wise
+						prevFrameSpots.get(oLabel, oSpot);
+
+						//add edge only if there is none such existing already
+						if (modelGraph.getEdge( oSpot, nSpot ) == null)
+							modelGraph.addEdge( oSpot, nSpot, linkRef ).init();
+					}
 				}
 			}
 
 			//in any case, add-or-replace the association of nSpot to this label
-			recentlyUsedSpots.put(label, nSpot);
+			currFrameSpots.put(label, nSpot);
 
 			//NB: we're not removing finished tracks TODO??
 			//NB: we shall not remove finished tracks until we're sure they are no longer parents to some future tracks
@@ -466,7 +468,7 @@ extends DynamicCommand
 
 				//found some marker voxel, find its spot,
 				//and increase overlap counter if voxel falls into the spot
-				recentlyUsedSpots.get((int)voxelCursor.get().getRealFloat(), nSpot);
+				currFrameSpots.get((int)voxelCursor.get().getRealFloat(), nSpot);
 				nSpot.localize(positionS);
 				nSpot.getCovariance(cov);
 
@@ -490,16 +492,16 @@ extends DynamicCommand
 				//System.out.println((int)m.label.getRealFloat()+": "+m.markerOverlap+" / "+m.size);
 				if (2*m.markerOverlap < m.size)
 					logService.error("time "+time
-					                  +": spot "+recentlyUsedSpots.get((int)m.label.getRealFloat(),nSpot).getLabel()
+					                  +": spot "+currFrameSpots.get((int)m.label.getRealFloat(),nSpot).getLabel()
 					                  +" does not cover image marker "+(int)m.label.getRealFloat());
 			}
 		}
-	}
 
+		//now, move currFrameSpots to prevFrameSpots, and clear currFrameSpots
+		final IntRefMap< Spot > tmp = currFrameSpots;
+		currFrameSpots = prevFrameSpots;
+		prevFrameSpots = tmp;
 
-	public
-	String printRealInterval(final RealInterval ri)
-	{
-		return "["+ri.realMin(0)+","+ri.realMin(1)+","+ri.realMin(2)+"] <-> ["+ri.realMax(0)+","+ri.realMax(1)+","+ri.realMax(2)+"]";
+		currFrameSpots.clear();
 	}
 }
