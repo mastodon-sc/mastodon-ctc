@@ -34,18 +34,18 @@ import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.Util;
 import net.imglib2.view.Views;
 
-import org.mastodon.revised.mamut.MamutAppModel;
-import org.mastodon.revised.model.mamut.Spot;
-import org.mastodon.revised.model.mamut.Link;
-import org.mastodon.revised.model.mamut.Model;
-import org.mastodon.revised.model.mamut.ModelGraph;
+import org.mastodon.mamut.MamutAppModel;
+import org.mastodon.mamut.model.Spot;
+import org.mastodon.mamut.model.Link;
+import org.mastodon.mamut.model.Model;
+import org.mastodon.mamut.model.ModelGraph;
 import org.mastodon.spatial.SpatioTemporalIndex;
 import org.mastodon.collection.RefIntMap;
 import org.mastodon.collection.RefMaps;
 
-import de.mpicbg.ulman.ctc.Mastodon.util.ButtonHandler;
-import de.mpicbg.ulman.ctc.Mastodon.util.ParallelImgSaver;
-import de.mpicbg.ulman.ctc.Mastodon.auxPlugins.TRAMarkersProvider;
+import org.mastodon.ctc.util.ButtonHandler;
+import org.mastodon.ctc.util.ParallelImgSaver;
+import org.mastodon.ctc.auxPlugins.TRAMarkersProvider;
 import net.celltrackingchallenge.measures.TrackRecords;
 
 @Plugin( type = Command.class, name = "CTC format exporter @ Mastodon" )

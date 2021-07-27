@@ -26,11 +26,11 @@ import org.scijava.command.DynamicCommand;
 import org.scijava.plugin.Plugin;
 import org.scijava.plugin.Parameter;
 
-import org.mastodon.revised.mamut.MamutAppModel;
-import org.mastodon.revised.model.mamut.Spot;
-import org.mastodon.revised.model.mamut.Link;
-import org.mastodon.revised.model.mamut.Model;
-import org.mastodon.revised.model.mamut.ModelGraph;
+import org.mastodon.mamut.MamutAppModel;
+import org.mastodon.mamut.model.Spot;
+import org.mastodon.mamut.model.Link;
+import org.mastodon.mamut.model.Model;
+import org.mastodon.mamut.model.ModelGraph;
 
 import org.mastodon.ctc.util.ImgProviders;
 

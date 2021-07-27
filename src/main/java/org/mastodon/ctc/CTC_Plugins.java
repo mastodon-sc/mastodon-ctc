@@ -10,9 +10,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.mastodon.app.ui.ViewMenuBuilder;
-import org.mastodon.plugin.MastodonPlugin;
-import org.mastodon.plugin.MastodonPluginAppModel;
-import org.mastodon.revised.mamut.MamutAppModel;
+import org.mastodon.mamut.plugin.MamutPlugin;
+import org.mastodon.mamut.plugin.MamutPluginAppModel;
+import org.mastodon.mamut.MamutAppModel;
 
 import org.scijava.log.LogService;
 import org.scijava.AbstractContextual;
@@ -23,8 +23,8 @@ import org.scijava.ui.behaviour.util.AbstractNamedAction;
 import org.scijava.ui.behaviour.util.RunnableAction;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 
-@Plugin( type = CTC_Plugins.class )
-public class CTC_Plugins extends AbstractContextual implements MastodonPlugin
+@Plugin( type = MamutPlugin.class )
+public class CTC_Plugins extends AbstractContextual implements MamutPlugin
 {
 	//"IDs" of all plug-ins wrapped in this class
 	private static final String CTC_IMPORT = "CTC-import-all";
@@ -93,11 +93,11 @@ public class CTC_Plugins extends AbstractContextual implements MastodonPlugin
 	}
 
 	/** reference to the currently available project in Mastodon */
-	private MastodonPluginAppModel pluginAppModel;
+	private MamutPluginAppModel pluginAppModel;
 
 	/** learn about the current project's params */
 	@Override
-	public void setAppModel( final MastodonPluginAppModel model )
+	public void setAppPluginModel( final MamutPluginAppModel model )
 	{
 		//the application reports back to us if some project is available
 		this.pluginAppModel = model;

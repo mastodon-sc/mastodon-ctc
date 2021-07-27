@@ -10,8 +10,9 @@
 package org.mastodon.ctc;
 
 import net.imagej.ImageJ;
-import org.mastodon.project.MamutProject;
-import org.mastodon.revised.mamut.Mastodon;
+import org.mastodon.mamut.MainWindow;
+import org.mastodon.mamut.WindowManager;
+import org.mastodon.mamut.project.MamutProject;
 
 import javax.swing.*;
 import java.io.File;

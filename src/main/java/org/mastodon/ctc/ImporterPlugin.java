@@ -32,20 +32,20 @@ import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.LinAlgHelpers;
 
-import org.mastodon.revised.ui.util.FileChooser;
-import org.mastodon.revised.ui.util.ExtensionFileFilter;
-import org.mastodon.revised.mamut.MamutAppModel;
-import org.mastodon.revised.model.AbstractModelImporter;
-import org.mastodon.revised.model.mamut.Spot;
-import org.mastodon.revised.model.mamut.Link;
-import org.mastodon.revised.model.mamut.Model;
-import org.mastodon.revised.model.mamut.ModelGraph;
+import org.mastodon.ui.util.FileChooser;
+import org.mastodon.ui.util.ExtensionFileFilter;
+import org.mastodon.mamut.MamutAppModel;
+import org.mastodon.model.AbstractModelImporter;
+import org.mastodon.mamut.model.Spot;
+import org.mastodon.mamut.model.Link;
+import org.mastodon.mamut.model.Model;
+import org.mastodon.mamut.model.ModelGraph;
 import org.mastodon.collection.IntRefMap;
 import org.mastodon.collection.RefMaps;
 
-import de.mpicbg.ulman.ctc.Mastodon.util.ButtonHandler;
-import de.mpicbg.ulman.ctc.Mastodon.util.ImgProviders;
-import de.mpicbg.ulman.ctc.Mastodon.auxPlugins.FileTemplateProvider;
+import org.mastodon.ctc.util.ButtonHandler;
+import org.mastodon.ctc.util.ImgProviders;
+import org.mastodon.ctc.auxPlugins.FileTemplateProvider;
 import net.celltrackingchallenge.measures.TrackRecords;
 
 @Plugin( type = Command.class, name = "CTC format importer @ Mastodon" )
