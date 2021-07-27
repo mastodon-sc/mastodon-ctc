@@ -65,13 +65,16 @@ public class IoPoints_Plugins extends AbstractContextual implements MamutPlugin
 		@Override
 		public void getCommandDescriptions( final CommandDescriptions descriptions )
 		{
-			/*
-			TODO add desc for plugins
-			descriptions.add( EXPORT_PHYLOXML, EXPORT_PHYLOXML_KEYS, "Export subtree to PhyloXML format." );
-			descriptions.add( FLIP_DESCENDANTS, FLIP_DESCENDANTS_KEYS, "Flip children in trackscheme graph." );
-			descriptions.add( COPY_TAG, COPY_TAG_KEYS, "Copy tags: everything that has tag A assigned gets B assigned." );
-			descriptions.add( INTERPOLATE_SPOTS, INTERPOLATE_SPOTS_KEYS, "Interpolate missing spots." );
-			*/
+			descriptions.add(IMPORT_FROM_IMAGES,  IMPORT_FROM_IMAGES_KEYS,
+					"Adds new spots from instance segmentation image series");
+			descriptions.add(POINTS_EXPORT_3COLS, POINTS_EXPORT_3COLS_KEYS,
+					"Exports spots x,y,z coordinates into text files in user-given folder, one file per one time point");
+			descriptions.add(POINTS_IMPORT_3COLS, POINTS_IMPORT_3COLS_KEYS,
+					"Adds new spots from a file with x,y,z coordinates, every spot creates own spatially-stationary track through-out the whole time-lapse");
+			descriptions.add(POINTS_EXPORT_4COLS, POINTS_EXPORT_4COLS_KEYS,
+					"Exports spots x,y,z,t coordinates into user-given text file");
+			descriptions.add(POINTS_IMPORT_4COLS, POINTS_IMPORT_4COLS_KEYS,
+					"Adds new spots from a file with x,y,z,t coordinates, no linking among the spots is done");
 		}
 	}
 
