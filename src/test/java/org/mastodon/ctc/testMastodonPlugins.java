@@ -33,8 +33,9 @@ public class testMastodonPlugins
 				new File( "/home/ulman/data/Polyclad/2019-09-06_EcNr2_NLSH2B-GFP_T-OpenSPIM_singleTP.mastodon" ),
 				new File( "/home/ulman/data/Polyclad/2019-09-06_EcNr2_NLSH2B-GFP_T-OpenSPIM_singleTP.xml" ) );
 
-		final Mastodon mastodon = (Mastodon)ij.command().run(Mastodon.class, true).get().getCommand();
-		mastodon.setExitOnClose();
-		mastodon.openProject( project );
+		//start up own Mastodon window
+		final WindowManager wm = new WindowManager( ij.getContext() );
+		wm.getProjectManager().open( project );
+		new MainWindow( wm ).setVisible( true );
 	}
 }

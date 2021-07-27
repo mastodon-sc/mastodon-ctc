@@ -154,5 +154,16 @@
 			<artifactId>mastodon</artifactId>
 			<version>1.0.0-beta-19</version>
 		</dependency>
+		<dependency>
+			<groupId>org.jhotdraw</groupId>
+			<artifactId>jhotdraw</artifactId>
+			<version>7.6.0</version>
+		</dependency>
+
+		<!-- for testing it... -->
+		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>imagej</artifactId>
+		</dependency>
 	</dependencies>
 </project>
