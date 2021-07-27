@@ -1,5 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -8,26 +8,23 @@
 		<version>30.0.0</version>
 	</parent>
 
-
-	<groupId>de.mpicbg.ulman</groupId>
-	<artifactId>CTC-FijiPlugins</artifactId>
-	<version>1.4.5</version>
+	<groupId>org.mastodon</groupId>
+	<artifactId>mastodon-ctc</artifactId>
+	<version>0.1.0-SNAPSHOT</version>
 
 	<organization>
-		<name>MPI-CBG</name>
-		<url>http://www.mpi-cbg.de</url>
+		<name>Mastodon Science</name>
+		<url>http://github.com/mastodon-sc</url>
 	</organization>
 
-	<name>CTC FijiPlugins</name>
-	<description>Implementation of measures and front-end plugins related to the CTC paper.</description>
-	<url>https://github.com/xulman/CTC-FijiPlugins</url>
-	<inceptionYear>2017</inceptionYear>
+	<name>Mastodon Plugin for Import/Export into the CellTrackingChallenge Format</name>
+	<description>Mastodon plugins to foster communication between Mastodon and CellTrackingChallenge</description>
+	<url>https://github.com/mastodon-sc/mastodon-ctc</url>
+	<inceptionYear>2019</inceptionYear>
 
-	<packaging>pom</packaging>
 	<licenses>
 		<license>
-			<name>CC0 1.0 Universal License</name>
-			<url>http://creativecommons.org/publicdomain/zero/1.0/</url>
+			<name>Simplified BSD License</name>
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
@@ -35,56 +32,127 @@
 	<developers>
 		<developer>
 			<id>xulman</id>
-			<name>Vladimír Ulman</name>
-			<url>http://www.fi.muni.cz/~xulman/</url>
+			<name>Vladimir Ulman</name>
+			<email>ulman@fi.muni.cz</email>
+			<url>http://imagej.net/User:Ulman</url>
+			<organization>IT4Innovation TUO-VSB</organization>
+			<organizationUrl>http://www.it4i.cz/</organizationUrl>
 			<roles>
-				<role>founder</role>
 				<role>lead</role>
 				<role>developer</role>
-				<role>debugger</role>
-				<role>reviewer</role>
-				<role>support</role>
-				<role>maintainer</role>
 			</roles>
 		</developer>
 	</developers>
+
 	<contributors>
 		<contributor>
-			<name>None</name>
+			<name>none</name>
 		</contributor>
 	</contributors>
 
 	<mailingLists>
 		<mailingList>
 			<name>ImageJ Forum</name>
-			<archive>http://forum.imagej.net/</archive>
+			<archive>https://forum.image.sc/</archive>
 		</mailingList>
 	</mailingLists>
 
+	<!-- ====================================== -->
 
 	<scm>
-		<connection>scm:git:git://github.com/xulman/CTC-FijiPlugins</connection>
-		<developerConnection>scm:git:git://github.com/xulman/CTC-FijiPlugins</developerConnection>
+		<url>https://github.com/mastodon-sc/mastodon-ctc</url>
 		<tag>HEAD</tag>
-		<url>https://github.com/xulman/CTC-FijiPlugins</url>
 	</scm>
 	<issueManagement>
 		<system>GitHub Issues</system>
-		<url>http://github.com/xulman/CTC-FijiPlugins/issues</url>
+		<url>https://github.com/mastodon-sc/mastodon-ctc/issues</url>
 	</issueManagement>
 	<ciManagement>
 		<system>None</system>
 	</ciManagement>
 
+	<distributionManagement>
+		<repository>
+			<id>it4i</id>
+			<url>https://artifactory.cs.vsb.cz/it4i/</url>
+		</repository>
+	</distributionManagement>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>pl.project13.maven</groupId>
+				<artifactId>git-commit-id-plugin</artifactId>
+				<version>2.2.4</version>
+				<executions>
+					<execution>
+						<phase>validate</phase>
+						<goals>
+							<goal>revision</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
+					<generateGitPropertiesFile>true</generateGitPropertiesFile>
+					<generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
+					<includeOnlyProperties>
+						<includeOnlyProperty>^git.build.(time|version)$</includeOnlyProperty>
+						<includeOnlyProperty>^git.commit.id.(abbrev|full)$</includeOnlyProperty>
+					</includeOnlyProperties>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<executable>sh</executable>
+					<arguments>
+						<argument>-c</argument>
+						<argument>rm -v ${project.build.outputDirectory}/COMMITrev_*; touch ${project.build.outputDirectory}/COMMITrev_${git.commit.id.abbrev};</argument>
+					</arguments>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<packaging>jar</packaging>
+
+	<!-- ====================================== -->
+
 	<properties>
-		<package-name>de.mpicbg.ulman.ctc</package-name>
-		<license.licenseName>cc0</license.licenseName>
-		<license.copyrightOwners>N/A</license.copyrightOwners>
-		<license.projectName>CTC-FijiPlugins</license.projectName>
+		<package-name>org.mastodon</package-name>
+
+		<license.licenseName>bsd_2</license.licenseName>
+		<license.projectName>mastodon-collaborative</license.projectName>
+		<license.organizationName>Mastodon authors</license.organizationName>
+		<license.copyrightOwners>Vladimir Ulman</license.copyrightOwners>
 	</properties>
 
-	<modules>
-		<module>CTC-paper</module>
-		<module>CTC-related</module>
-	</modules>
+	<repositories>
+		<repository>
+			<id>scijava.public</id>
+			<url>https://maven.scijava.org/content/groups/public</url>
+		</repository>
+		<repository>
+			<id>it4i</id>
+			<url>https://artifactory.cs.vsb.cz/it4i/</url>
+		</repository>
+	</repositories>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.mastodon</groupId>
+			<artifactId>mastodon</artifactId>
+			<version>1.0.0-beta-19</version>
+		</dependency>
+	</dependencies>
 </project>
