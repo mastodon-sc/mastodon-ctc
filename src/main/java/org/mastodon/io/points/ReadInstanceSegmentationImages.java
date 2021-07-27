@@ -1,4 +1,4 @@
-package org.mastodon.tomancak;
+package org.mastodon.io.points;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -9,7 +9,7 @@ import javax.swing.BoxLayout;
 import bdv.viewer.SourceAndConverter;
 import org.jhotdraw.samples.svg.gui.ProgressIndicator;
 
-import org.mastodon.revised.ui.util.FileChooser;
+import org.mastodon.ui.util.FileChooser;
 import org.scijava.command.Command;
 import org.scijava.command.CommandModule;
 import org.scijava.command.CommandService;
@@ -30,12 +30,12 @@ import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.LinAlgHelpers;
 import net.imglib2.view.Views;
 
-import org.mastodon.revised.mamut.MamutAppModel;
-import org.mastodon.revised.model.AbstractModelImporter;
-import org.mastodon.revised.model.mamut.Spot;
-import org.mastodon.revised.model.mamut.Link;
-import org.mastodon.revised.model.mamut.Model;
-import org.mastodon.revised.model.mamut.ModelGraph;
+import org.mastodon.mamut.MamutAppModel;
+import org.mastodon.model.AbstractModelImporter;
+import org.mastodon.mamut.model.Spot;
+import org.mastodon.mamut.model.Link;
+import org.mastodon.mamut.model.Model;
+import org.mastodon.mamut.model.ModelGraph;
 import org.mastodon.collection.IntRefMap;
 import org.mastodon.collection.RefMaps;
 
@@ -45,8 +45,9 @@ import java.util.HashMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.ExecutionException;
 
-import org.mastodon.tomancak.util.ImgProviders;
-import org.mastodon.tomancak.util.FileTemplateProvider;
+import org.mastodon.ctc.util.ButtonHandler;
+import org.mastodon.ctc.util.ImgProviders;
+import org.mastodon.ctc.auxPlugins.FileTemplateProvider;
 
 @Plugin( type = Command.class, name = "Instance segmentation importer @ Mastodon" )
 public class ReadInstanceSegmentationImages
@@ -497,20 +498,5 @@ extends DynamicCommand
 		prevFrameSpots = tmp;
 
 		currFrameSpots.clear();
-	}
-
-
-	///a single-purpose, button-event-handler, aux class
-	public class ButtonHandler implements ActionListener
-	{
-		//whitnessed the event already?
-		private boolean buttonPressed = false;
-
-		@Override
-		public void actionPerformed(ActionEvent e)
-		{ buttonPressed = true; }
-
-		public boolean buttonPressed()
-		{ return buttonPressed; }
 	}
 }

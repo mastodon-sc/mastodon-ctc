@@ -1,4 +1,4 @@
-package org.mastodon.tomancak;
+package org.mastodon.io.points;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -6,14 +6,14 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Scanner;
 
-import org.mastodon.revised.mamut.MamutAppModel;
-import org.mastodon.revised.model.AbstractModelImporter;
-import org.mastodon.revised.model.mamut.Link;
-import org.mastodon.revised.model.mamut.Model;
-import org.mastodon.revised.model.mamut.ModelGraph;
-import org.mastodon.revised.model.mamut.Spot;
-import org.mastodon.revised.ui.util.FileChooser;
-import org.mastodon.revised.ui.util.ExtensionFileFilter;
+import org.mastodon.mamut.MamutAppModel;
+import org.mastodon.model.AbstractModelImporter;
+import org.mastodon.mamut.model.Link;
+import org.mastodon.mamut.model.Model;
+import org.mastodon.mamut.model.ModelGraph;
+import org.mastodon.mamut.model.Spot;
+import org.mastodon.ui.util.FileChooser;
+import org.mastodon.ui.util.ExtensionFileFilter;
 
 import net.imglib2.realtransform.AffineTransform3D;
 

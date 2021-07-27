@@ -1,15 +1,16 @@
-package org.mastodon.tomancak;
+package org.mastodon.io.points;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import org.mastodon.revised.mamut.MamutAppModel;
-import org.mastodon.revised.model.mamut.Spot;
-import org.mastodon.revised.ui.util.FileChooser;
+import org.mastodon.mamut.MamutAppModel;
+import org.mastodon.mamut.model.Spot;
 import org.mastodon.spatial.SpatioTemporalIndex;
-import org.mastodon.revised.ui.util.ExtensionFileFilter;
+
+import org.mastodon.ui.util.FileChooser;
+import org.mastodon.ui.util.ExtensionFileFilter;
 
 import net.imglib2.realtransform.AffineTransform3D;
 

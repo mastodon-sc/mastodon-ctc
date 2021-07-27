@@ -1,4 +1,4 @@
-package org.mastodon.tomancak;
+package org.mastodon.io.points;
 
 import static org.mastodon.app.ui.ViewMenuBuilder.item;
 import static org.mastodon.app.ui.ViewMenuBuilder.menu;
@@ -12,19 +12,19 @@ import java.util.*;
 
 import org.mastodon.app.ui.ViewMenuBuilder;
 import org.mastodon.collection.RefList;
-import org.mastodon.plugin.MastodonPlugin;
-import org.mastodon.plugin.MastodonPluginAppModel;
+import org.mastodon.mamut.plugin.MamutPlugin;
+import org.mastodon.mamut.plugin.MamutPluginAppModel;
 
-import org.mastodon.revised.ui.util.FileChooser;
-import org.mastodon.revised.ui.util.ExtensionFileFilter;
+import org.mastodon.ui.util.FileChooser;
+import org.mastodon.ui.util.ExtensionFileFilter;
 
 import net.imglib2.realtransform.AffineTransform3D;
 import org.mastodon.spatial.SpatioTemporalIndex;
-import org.mastodon.revised.mamut.MamutAppModel;
-import org.mastodon.revised.model.mamut.Model;
-import org.mastodon.revised.model.mamut.ModelGraph;
-import org.mastodon.revised.model.mamut.Spot;
-import org.mastodon.revised.model.mamut.Link;
+import org.mastodon.mamut.MamutAppModel;
+import org.mastodon.mamut.model.Model;
+import org.mastodon.mamut.model.ModelGraph;
+import org.mastodon.mamut.model.Spot;
+import org.mastodon.mamut.model.Link;
 
 import org.mastodon.collection.RefIntMap;
 import org.mastodon.collection.RefMaps;
@@ -40,8 +40,8 @@ import org.scijava.log.LogLevel;
 import org.scijava.log.LogService;
 
 
-@Plugin( type = PlainTextFileExport.class )
-public class PlainTextFileExport extends AbstractContextual implements MastodonPlugin
+@Plugin( type = MamutPlugin.class )
+public class PlainTextFileExport extends AbstractContextual implements MamutPlugin
 {
 	//"IDs" of all plug-ins wrapped in this class
 	private static final String TXT_EXPORT = "[tomancak] export tracks as txt file";
@@ -90,11 +90,11 @@ public class PlainTextFileExport extends AbstractContextual implements MastodonP
 	}
 
 	/** reference to the currently available project in Mastodon */
-	private MastodonPluginAppModel pluginAppModel;
+	private MamutPluginAppModel pluginAppModel;
 
 	/** learn about the current project's params */
 	@Override
-	public void setAppModel( final MastodonPluginAppModel model )
+	public void setAppPluginModel( final MamutPluginAppModel model )
 	{
 		//the application reports back to us if some project is available
 		this.pluginAppModel = model;
@@ -367,7 +367,7 @@ public class PlainTextFileExport extends AbstractContextual implements MastodonP
 	}
 
 
-	class RichTrackRecords extends org.mastodon.tomancak.util.TrackRecords
+	class RichTrackRecords extends net.celltrackingchallenge.measures.TrackRecords
 	{
 		//reference on the pool of vertices that we need for the RefLists below
 		final private RefCollection<Spot> poolOfVertices;
