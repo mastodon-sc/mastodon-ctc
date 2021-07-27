@@ -111,6 +111,9 @@ extends DynamicCommand
 				return new ImgProviders.ImgProviderFromDisk(
 					((File)files.get().getInput("containingFolder")).getAbsolutePath(),
 					(String)files.get().getInput("filenameTemplate"),timeFrom);
+			} catch (NullPointerException e) {
+				//dialog closed w/o pressing the "OK" button
+				return null;
 			} catch (InterruptedException | ExecutionException e) {
 				e.printStackTrace();
 				return null;
