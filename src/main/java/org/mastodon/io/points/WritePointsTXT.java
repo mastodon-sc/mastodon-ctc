@@ -84,7 +84,7 @@ public class WritePointsTXT
 		if (selectedFolder == null) return;
 
 		//check we can open the file; and complain if not
-		if (selectedFolder.canWrite() == false)
+		if (!selectedFolder.canWrite())
 			throw new IllegalArgumentException("Cannot write to the selected folder: "+selectedFolder.getAbsolutePath());
 
 		//-------------------------------------------------

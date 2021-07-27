@@ -38,7 +38,7 @@ public class ReadPointsTXT
 		if (selectedFile == null) return;
 
 		//check we can open the file; and complain if not
-		if (selectedFile.canRead() == false)
+		if (!selectedFile.canRead())
 			throw new IllegalArgumentException("Cannot read the selected file: "+selectedFile.getAbsolutePath());
 
 		Scanner s = null;

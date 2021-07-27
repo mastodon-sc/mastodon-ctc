@@ -104,7 +104,9 @@ extends DynamicCommand
 		if (imgSourceChoice.startsWith("images in own"))
 		{
 			//ask for folder and filename type
-			Future<CommandModule> files = this.getContext().getService(CommandService.class).run(FileTemplateProvider.class,true);
+			Future<CommandModule> files = this.getContext()
+					.getService(CommandService.class)
+					.run(FileTemplateProvider.class,true,"filenameTXT","notUsedThisTime");
 			try {
 				return new ImgProviders.ImgProviderFromDisk(
 					((File)files.get().getInput("containingFolder")).getAbsolutePath(),
@@ -301,7 +303,7 @@ extends DynamicCommand
 			long markerOverlap;
 
 			//accumulated coordinates
-			double[] accCoords;
+			final double[] accCoords;
 
 			//z-coordinate span
 			int minZ=inImgDims < 3 ? 0 : Integer.MAX_VALUE;
