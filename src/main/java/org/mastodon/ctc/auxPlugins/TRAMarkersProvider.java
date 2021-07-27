@@ -1,9 +1,9 @@
-package de.mpicbg.ulman.ctc.Mastodon.auxPlugins;
+package org.mastodon.ctc.auxPlugins;
 
 import java.util.concurrent.ExecutionException;
 import org.scijava.command.CommandService;
 import mpicbg.spim.data.sequence.VoxelDimensions;
-import de.mpicbg.ulman.ctc.Mastodon.auxPlugins.TRAMarkers.*;
+import org.mastodon.ctc.auxPlugins.TRAMarkers.*;
 
 public class TRAMarkersProvider
 {

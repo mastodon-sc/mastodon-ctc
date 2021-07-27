@@ -1,8 +1,8 @@
-package de.mpicbg.ulman.ctc.Mastodon.auxPlugins.TRAMarkers;
+package org.mastodon.ctc.auxPlugins.TRAMarkers;
 
 import net.imglib2.util.Util;
 import net.imglib2.RealLocalizable;
-import de.mpicbg.ulman.ctc.Mastodon.auxPlugins.TRAMarkersProvider;
+import org.mastodon.ctc.auxPlugins.TRAMarkersProvider;
 
 public class SpheresWithFloatingRadius implements TRAMarkersProvider.intersectionDecidable
 {

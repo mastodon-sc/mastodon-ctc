@@ -1,4 +1,4 @@
-package de.mpicbg.ulman.ctc.Mastodon;
+package org.mastodon.ctc;
 
 import java.awt.*;
 import javax.swing.JFrame;

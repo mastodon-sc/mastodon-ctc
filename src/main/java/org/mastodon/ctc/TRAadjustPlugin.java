@@ -1,4 +1,4 @@
-package de.mpicbg.ulman.ctc.Mastodon;
+package org.mastodon.ctc;
 
 import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.RandomAccess;
@@ -15,7 +15,7 @@ import net.imglib2.realtransform.AffineTransform3D;
 import org.mastodon.revised.mamut.MamutAppModel;
 import org.mastodon.revised.model.mamut.Spot;
 
-import de.mpicbg.ulman.ctc.Mastodon.util.ImgProviders;
+import org.mastodon.ctc.util.ImgProviders;
 
 @Plugin( type = Command.class, name = "CTC TRA marker positions auto adjuster @ Mastodon" )
 public class TRAadjustPlugin

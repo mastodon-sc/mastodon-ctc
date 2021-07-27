@@ -1,4 +1,4 @@
-package de.mpicbg.ulman.ctc.Mastodon.util;
+package org.mastodon.ctc.util;
 
 import ij.measure.Calibration;
 import mpicbg.spim.data.sequence.FinalVoxelDimensions;

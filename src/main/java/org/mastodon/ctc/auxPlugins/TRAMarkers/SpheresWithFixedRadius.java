@@ -1,13 +1,13 @@
-package de.mpicbg.ulman.ctc.Mastodon.auxPlugins.TRAMarkers;
+package org.mastodon.ctc.auxPlugins.TRAMarkers;
 
 import org.scijava.ItemVisibility;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
-import de.mpicbg.ulman.ctc.Mastodon.auxPlugins.TRAMarkersProvider;
+import org.mastodon.ctc.auxPlugins.TRAMarkersProvider;
 
-@Plugin( type = SpheresWithFixedRadius.class, visible = false,
+@Plugin( type = Command.class, visible = false,
          name = "Specify the sphere radius in the image units (e.g. in microns):" )
 public class SpheresWithFixedRadius implements TRAMarkersProvider.intersectionDecidable, Command
 {

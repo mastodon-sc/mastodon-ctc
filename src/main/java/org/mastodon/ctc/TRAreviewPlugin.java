@@ -1,4 +1,4 @@
-package de.mpicbg.ulman.ctc.Mastodon;
+package org.mastodon.ctc;
 
 import java.awt.*;
 import javax.swing.*;
@@ -32,7 +32,7 @@ import org.mastodon.revised.model.mamut.Link;
 import org.mastodon.revised.model.mamut.Model;
 import org.mastodon.revised.model.mamut.ModelGraph;
 
-import de.mpicbg.ulman.ctc.Mastodon.util.ImgProviders;
+import org.mastodon.ctc.util.ImgProviders;
 
 @Plugin( type = Command.class, name = "CTC TRA content reviewer @ Mastodon" )
 public class TRAreviewPlugin

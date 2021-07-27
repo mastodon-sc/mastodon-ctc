@@ -1,4 +1,4 @@
-package de.mpicbg.ulman.ctc.Mastodon;
+package org.mastodon.ctc;
 
 import static org.mastodon.app.ui.ViewMenuBuilder.item;
 import static org.mastodon.app.ui.ViewMenuBuilder.menu;

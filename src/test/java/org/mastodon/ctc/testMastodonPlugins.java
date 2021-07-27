@@ -7,7 +7,7 @@
  *
  * Copyright (C) 2017 Vladimír Ulman
  */
-package de.mpicbg.ulman.ctc;
+package org.mastodon.ctc;
 
 import net.imagej.ImageJ;
 import org.mastodon.project.MamutProject;
