@@ -1,9 +1,13 @@
 package org.mastodon.io.points;
 
-import java.util.Arrays;
-import java.util.HashMap;
+import static org.mastodon.app.ui.ViewMenuBuilder.item;
+import static org.mastodon.app.ui.ViewMenuBuilder.menu;
+
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
+
 import org.mastodon.app.ui.ViewMenuBuilder;
 import org.mastodon.mamut.plugin.MamutPlugin;
 import org.mastodon.mamut.plugin.MamutPluginAppModel;
@@ -11,6 +15,7 @@ import org.mastodon.mamut.MamutAppModel;
 import org.mastodon.ui.keymap.CommandDescriptionProvider;
 import org.mastodon.ui.keymap.CommandDescriptions;
 import org.mastodon.ui.keymap.KeyConfigContexts;
+
 import org.scijava.AbstractContextual;
 import org.scijava.plugin.Plugin;
 import org.scijava.command.CommandService;
@@ -19,18 +24,15 @@ import org.scijava.ui.behaviour.util.AbstractNamedAction;
 import org.scijava.ui.behaviour.util.Actions;
 import org.scijava.ui.behaviour.util.RunnableAction;
 
-import static org.mastodon.app.ui.ViewMenuBuilder.item;
-import static org.mastodon.app.ui.ViewMenuBuilder.menu;
-
 @Plugin( type = MamutPlugin.class )
 public class IoPoints_Plugins extends AbstractContextual implements MamutPlugin
 {
-	private static final String IMPORT_FROM_IMAGES = "[tomancak] import from instance segmentation";
+	private static final String IMPORT_FROM_IMAGES = "[imports] import from instance segmentation";
 
-	private static final String POINTS_EXPORT_3COLS = "[tomancak] export spots as 3col points";
-	private static final String POINTS_IMPORT_3COLS = "[tomancak] import spots from 3col points";
-	private static final String POINTS_EXPORT_4COLS = "[tomancak] export spots as 4col points";
-	private static final String POINTS_IMPORT_4COLS = "[tomancak] import spots from 4col points";
+	private static final String POINTS_EXPORT_3COLS = "[exports] export spots as 3col points";
+	private static final String POINTS_IMPORT_3COLS = "[imports] import spots from 3col points";
+	private static final String POINTS_EXPORT_4COLS = "[exports] export spots as 4col points";
+	private static final String POINTS_IMPORT_4COLS = "[imports] import spots from 4col points";
 
 	private static final String[] IMPORT_FROM_IMAGES_KEYS = { "not mapped" };
 
@@ -38,9 +40,10 @@ public class IoPoints_Plugins extends AbstractContextual implements MamutPlugin
 	private static final String[] POINTS_IMPORT_3COLS_KEYS = { "not mapped" };
 	private static final String[] POINTS_EXPORT_4COLS_KEYS = { "not mapped" };
 	private static final String[] POINTS_IMPORT_4COLS_KEYS = { "not mapped" };
+	//------------------------------------------------------------------------
 
-	private static Map< String, String > menuTexts = new HashMap<>();
 
+	private static final Map< String, String > menuTexts = new HashMap<>();
 	static
 	{
 		menuTexts.put( IMPORT_FROM_IMAGES, "Import from instance segmentation" );
@@ -50,10 +53,26 @@ public class IoPoints_Plugins extends AbstractContextual implements MamutPlugin
 		menuTexts.put( POINTS_EXPORT_4COLS, "Export to 4-column file" );
 		menuTexts.put( POINTS_IMPORT_4COLS, "Import from 4-column file" );
 	}
+	@Override
+	public Map< String, String > getMenuTexts() { return menuTexts; }
 
-	/*
-	 * Command descriptions for all provided commands
-	 */
+	@Override
+	public List< ViewMenuBuilder.MenuItem > getMenuItems()
+	{
+		return Collections.singletonList( menu( "Plugins",
+			menu( "Imports",
+				item( POINTS_IMPORT_3COLS ),
+				item( POINTS_IMPORT_4COLS ),
+				item( IMPORT_FROM_IMAGES )
+			),
+			menu( "Exports",
+				item( POINTS_EXPORT_3COLS ),
+				item( POINTS_EXPORT_4COLS )
+			)
+		) );
+	}
+
+	/** Command descriptions for all provided commands */
 	@Plugin( type = Descriptions.class )
 	public static class Descriptions extends CommandDescriptionProvider
 	{
@@ -77,6 +96,8 @@ public class IoPoints_Plugins extends AbstractContextual implements MamutPlugin
 					"Adds new spots from a file with x,y,z,t coordinates, no linking among the spots is done");
 		}
 	}
+	//------------------------------------------------------------------------
+
 
 	private final AbstractNamedAction importFromImagesAction;
 
@@ -96,7 +117,6 @@ public class IoPoints_Plugins extends AbstractContextual implements MamutPlugin
 		exportFourColumnPointsAction               = new RunnableAction( POINTS_EXPORT_4COLS, this::exportFourColumnPoints );
 		importFourColumnPointsAction               = new RunnableAction( POINTS_IMPORT_4COLS, this::importFourColumnPoints );
 
-
 		updateEnabledActions();
 	}
 
@@ -105,26 +125,6 @@ public class IoPoints_Plugins extends AbstractContextual implements MamutPlugin
 	{
 		this.pluginAppModel = model;
 		updateEnabledActions();
-	}
-
-	@Override
-	public List< ViewMenuBuilder.MenuItem > getMenuItems()
-	{
-		return Arrays.asList(
-				menu( "Plugins",
-						menu( "Tomancak lab",
-								menu( "Spots from/to TXT files",
-									item( POINTS_EXPORT_3COLS ),
-									item( POINTS_IMPORT_3COLS ),
-									item( POINTS_EXPORT_4COLS ),
-									item( POINTS_IMPORT_4COLS ) ),
-								item( IMPORT_FROM_IMAGES ) ) ) );
-	}
-
-	@Override
-	public Map< String, String > getMenuTexts()
-	{
-		return menuTexts;
 	}
 
 	@Override
@@ -148,6 +148,8 @@ public class IoPoints_Plugins extends AbstractContextual implements MamutPlugin
 		exportFourColumnPointsAction.setEnabled( appModel != null );
 		importFourColumnPointsAction.setEnabled( appModel != null );
 	}
+	//------------------------------------------------------------------------
+	//------------------------------------------------------------------------
 
 	private void importFromImages()
 	{

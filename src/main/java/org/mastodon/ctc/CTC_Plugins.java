@@ -31,15 +31,18 @@ import static org.mastodon.app.ui.ViewMenuBuilder.item;
 import static org.mastodon.app.ui.ViewMenuBuilder.menu;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 
 import org.mastodon.app.ui.ViewMenuBuilder;
 import org.mastodon.mamut.plugin.MamutPlugin;
 import org.mastodon.mamut.plugin.MamutPluginAppModel;
 import org.mastodon.mamut.MamutAppModel;
+import org.mastodon.ui.keymap.CommandDescriptionProvider;
+import org.mastodon.ui.keymap.CommandDescriptions;
+import org.mastodon.ui.keymap.KeyConfigContexts;
 
 import org.scijava.log.LogService;
 import org.scijava.AbstractContextual;
@@ -54,55 +57,84 @@ import net.imglib2.type.numeric.integer.UnsignedShortType;
 public class CTC_Plugins extends AbstractContextual implements MamutPlugin
 {
 	//"IDs" of all plug-ins wrapped in this class
-	private static final String CTC_IMPORT = "CTC-import-all";
-	private static final String CTC_EXPORT = "CTC-export-all";
-	private static final String CTC_TRA_CHECKER = "CTC-reviewTRA";
-	private static final String CTC_TRA_ADJUSTER = "CTC-adjustTRA";
-	private static final String CTC_TRA_ADJUSTER_NQ = "CTC-adjustTRA-noQuestions";
-	private static final String CTC_TRA_ADJUSTER_NQ2 = "CTC-adjustTRA-noQuestionsToo";
+	private static final String CTC_IMPORT = "[ctc] import all";
+	private static final String CTC_EXPORT = "[ctc] export all";
+	private static final String CTC_TRA_CHECKER = "[ctc] review TRA";
+	private static final String CTC_TRA_ADJUSTER = "[ctc] adjust TRA";
+	private static final String CTC_TRA_ADJUSTER_NQ = "[ctc] adjust TRA w/o dialog";
+
+	private static final String[] CTC_IMPORT_KEYS = { "not mapped" };
+	private static final String[] CTC_EXPORT_KEYS = { "not mapped" };
+	private static final String[] CTC_TRA_CHECKER_KEYS = { "ctrl P" };
+	private static final String[] CTC_TRA_ADJUSTER_KEYS = { "ctrl O" };
+	private static final String[] CTC_TRA_ADJUSTER_NQ_KEYS = { "ctrl shift O", "ctrl shift S" };
 	//------------------------------------------------------------------------
 
-	@Override
-	public List< ViewMenuBuilder.MenuItem > getMenuItems()
-	{
-		//this places the plug-in's menu items into the menu,
-		//the titles of the items are defined right below
-		return Arrays.asList(
-				menu( "Plugins",
-						menu( "Cell Tracking Challenge",
-								item( CTC_IMPORT ), item ( CTC_EXPORT), item ( CTC_TRA_CHECKER) ) ) );
-	}
 
 	/** titles of this plug-in's menu items */
-	private static Map< String, String > menuTexts = new HashMap<>();
+	private static final Map< String, String > menuTexts = new HashMap<>();
 	static
 	{
 		menuTexts.put( CTC_IMPORT, "Import from CTC format" );
 		menuTexts.put( CTC_EXPORT, "Export to CTC format" );
 		menuTexts.put( CTC_TRA_CHECKER, "Review TRA annotation" );
+		menuTexts.put( CTC_TRA_ADJUSTER, "Auto-adjust TRA annotation" );
 	}
+	@Override
+	public Map< String, String > getMenuTexts() { return menuTexts; }
 
 	@Override
-	public Map< String, String > getMenuTexts()
+	public List< ViewMenuBuilder.MenuItem > getMenuItems()
 	{
-		return menuTexts;
+		return Collections.singletonList( menu( "Plugins",
+			menu( "Cell Tracking Challenge",
+				item( CTC_IMPORT ),
+				item( CTC_EXPORT ),
+				item( CTC_TRA_CHECKER ),
+				item( CTC_TRA_ADJUSTER )
+			)
+		) );
+	}
+
+	/** Command descriptions for all provided commands */
+	@Plugin( type = Descriptions.class )
+	public static class Descriptions extends CommandDescriptionProvider
+	{
+		public Descriptions()
+		{
+			super( KeyConfigContexts.TRACKSCHEME, KeyConfigContexts.BIGDATAVIEWER );
+		}
+
+		@Override
+		public void getCommandDescriptions( final CommandDescriptions descriptions )
+		{
+			descriptions.add(CTC_IMPORT, CTC_IMPORT_KEYS, "");
+			descriptions.add(CTC_EXPORT, CTC_EXPORT_KEYS, "");
+			descriptions.add(CTC_TRA_CHECKER, CTC_TRA_CHECKER_KEYS, "");
+			descriptions.add(CTC_TRA_ADJUSTER, CTC_TRA_ADJUSTER_KEYS, "");
+			descriptions.add(CTC_TRA_ADJUSTER_NQ, CTC_TRA_ADJUSTER_NQ_KEYS, "");
+		}
 	}
 	//------------------------------------------------------------------------
+
 
 	private final AbstractNamedAction actionImport;
 	private final AbstractNamedAction actionExport;
 	private final AbstractNamedAction actionTRAreview;
-	private final AbstractNamedAction actionTRAadjust, actionTRAadjustNQ, actionTRAadjustNQ2;
+	private final AbstractNamedAction actionTRAadjust;
+	private final AbstractNamedAction actionTRAadjustNQ;
+
+	/** reference to the currently available project in Mastodon */
+	private MamutPluginAppModel pluginAppModel;
 
 	/** default c'tor: creates Actions available from this plug-in */
 	public CTC_Plugins()
 	{
-		actionImport = new RunnableAction( CTC_IMPORT, this::importer );
-		actionExport = new RunnableAction( CTC_EXPORT, this::exporter );
-		actionTRAreview = new RunnableAction( CTC_TRA_CHECKER, this::TRAreviewer );
-		actionTRAadjust = new RunnableAction( CTC_TRA_ADJUSTER, this::TRAadjuster );
+		actionImport       = new RunnableAction( CTC_IMPORT, this::importer );
+		actionExport       = new RunnableAction( CTC_EXPORT, this::exporter );
+		actionTRAreview    = new RunnableAction( CTC_TRA_CHECKER, this::TRAreviewer );
+		actionTRAadjust    = new RunnableAction( CTC_TRA_ADJUSTER, this::TRAadjuster );
 		actionTRAadjustNQ  = new RunnableAction( CTC_TRA_ADJUSTER_NQ, this::TRAadjusterNQ );
-		actionTRAadjustNQ2 = new RunnableAction( CTC_TRA_ADJUSTER_NQ2, this::TRAadjusterNQ );
 		updateEnabledActions();
 	}
 
@@ -110,17 +142,12 @@ public class CTC_Plugins extends AbstractContextual implements MamutPlugin
 	@Override
 	public void installGlobalActions( final Actions actions )
 	{
-		final String[] noShortCut = new String[] { "not mapped" };
-		actions.namedAction( actionImport, noShortCut );
-		actions.namedAction( actionExport, noShortCut );
-		actions.namedAction( actionTRAreview, "ctrl P" );
-		actions.namedAction( actionTRAadjust, "ctrl O" );
-		actions.namedAction( actionTRAadjustNQ , "ctrl shift O" );
-		actions.namedAction( actionTRAadjustNQ2, "ctrl shift S" );
+		actions.namedAction( actionImport,       CTC_IMPORT_KEYS );
+		actions.namedAction( actionExport,       CTC_EXPORT_KEYS );
+		actions.namedAction( actionTRAreview,    CTC_TRA_CHECKER_KEYS );
+		actions.namedAction( actionTRAadjust,    CTC_TRA_ADJUSTER_KEYS );
+		actions.namedAction( actionTRAadjustNQ , CTC_TRA_ADJUSTER_NQ_KEYS );
 	}
-
-	/** reference to the currently available project in Mastodon */
-	private MamutPluginAppModel pluginAppModel;
 
 	/** learn about the current project's params */
 	@Override
@@ -140,8 +167,8 @@ public class CTC_Plugins extends AbstractContextual implements MamutPlugin
 		actionTRAreview.setEnabled( appModel != null );
 		actionTRAadjust.setEnabled( appModel != null );
 		actionTRAadjustNQ.setEnabled( appModel != null );
-		actionTRAadjustNQ2.setEnabled( appModel != null );
 	}
+	//------------------------------------------------------------------------
 	//------------------------------------------------------------------------
 
 	/** opens the import dialog to find the tracks.txt file,
@@ -167,28 +194,6 @@ public class CTC_Plugins extends AbstractContextual implements MamutPlugin
 	}
 
 
-	/** returns a handle on a TRA folder that exists in the given
-	    input 'folder', or throws IllegalArgumentException exception */
-	private File enterTRAFolder(final File folder)
-	{
-		//check there is a TRA sub-folder; and if not, create it
-		final File traFolder = new File(folder.getPath()+File.separator+"TRA");
-		if (traFolder.exists())
-		{
-			//"move" into the existing TRA folder
-			return traFolder;
-		}
-		else
-		{
-			if (traFolder.mkdirs()) //create and enter it
-				return traFolder;
-			else
-				throw new IllegalArgumentException("Cannot create missing subfolder TRA in the folder: "+folder.getAbsolutePath());
-		}
-	}
-
-
-	/** TODO */
 	private void TRAreviewer()
 	{
 		this.getContext().getService(CommandService.class).run(
@@ -197,7 +202,6 @@ public class CTC_Plugins extends AbstractContextual implements MamutPlugin
 			"logService", this.getContext().getService(LogService.class));
 	}
 
-	/** TODO */
 	private void TRAadjuster()
 	{
 		this.getContext().getService(CommandService.class).run(

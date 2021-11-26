@@ -14,6 +14,9 @@ import org.mastodon.app.ui.ViewMenuBuilder;
 import org.mastodon.collection.RefList;
 import org.mastodon.mamut.plugin.MamutPlugin;
 import org.mastodon.mamut.plugin.MamutPluginAppModel;
+import org.mastodon.ui.keymap.CommandDescriptionProvider;
+import org.mastodon.ui.keymap.CommandDescriptions;
+import org.mastodon.ui.keymap.KeyConfigContexts;
 
 import org.mastodon.ui.util.FileChooser;
 import org.mastodon.ui.util.ExtensionFileFilter;
@@ -43,36 +46,51 @@ import org.scijava.log.LogService;
 @Plugin( type = MamutPlugin.class )
 public class PlainTextFileExport extends AbstractContextual implements MamutPlugin
 {
-	//"IDs" of all plug-ins wrapped in this class
-	private static final String TXT_EXPORT = "[tomancak] export tracks as txt file";
+	private static final String TXT_EXPORT = "[exports] export tracks as txt file";
+
+	private static final String[] TXT_EXPORT_KEYS = { "not mapped" };
 	//------------------------------------------------------------------------
 
-	@Override
-	public List< ViewMenuBuilder.MenuItem > getMenuItems()
-	{
-		//this places the plug-in's menu items into the menu,
-		//the titles of the items are defined right below
-		return Arrays.asList(
-				menu( "Plugins",
-						menu( "Tomancak lab",
-							item( TXT_EXPORT ) ) ) );
-	}
 
-	/** titles of this plug-in's menu items */
-	private static Map< String, String > menuTexts = new HashMap<>();
+	private static final Map< String, String > menuTexts = new HashMap<>();
 	static
 	{
 		menuTexts.put( TXT_EXPORT, "Export to plain text file" );
 	}
+	@Override
+	public Map< String, String > getMenuTexts() { return menuTexts; }
 
 	@Override
-	public Map< String, String > getMenuTexts()
+	public List< ViewMenuBuilder.MenuItem > getMenuItems()
 	{
-		return menuTexts;
+		return Collections.singletonList( menu( "Plugins",
+			menu( "Exports",
+				item( TXT_EXPORT )
+			)
+		) );
+	}
+
+	@Plugin( type = Descriptions.class )
+	public static class Descriptions extends CommandDescriptionProvider
+	{
+		public Descriptions()
+		{
+			super( KeyConfigContexts.TRACKSCHEME, KeyConfigContexts.BIGDATAVIEWER );
+		}
+
+		@Override
+		public void getCommandDescriptions( final CommandDescriptions descriptions )
+		{
+			descriptions.add(TXT_EXPORT, TXT_EXPORT_KEYS, "");
+		}
 	}
 	//------------------------------------------------------------------------
 
+
 	private final AbstractNamedAction actionExport;
+
+	/** reference to the currently available project in Mastodon */
+	private MamutPluginAppModel pluginAppModel;
 
 	/** default c'tor: creates Actions available from this plug-in */
 	public PlainTextFileExport()
@@ -80,17 +98,6 @@ public class PlainTextFileExport extends AbstractContextual implements MamutPlug
 		actionExport = new RunnableAction( TXT_EXPORT, this::exporter );
 		updateEnabledActions();
 	}
-
-	/** register the actions to the application (with no shortcut keys) */
-	@Override
-	public void installGlobalActions( final Actions actions )
-	{
-		final String[] noShortCut = new String[] { "not mapped" };
-		actions.namedAction( actionExport, noShortCut );
-	}
-
-	/** reference to the currently available project in Mastodon */
-	private MamutPluginAppModel pluginAppModel;
 
 	/** learn about the current project's params */
 	@Override
@@ -101,6 +108,13 @@ public class PlainTextFileExport extends AbstractContextual implements MamutPlug
 		updateEnabledActions();
 	}
 
+	/** register the actions to the application (with no shortcut keys) */
+	@Override
+	public void installGlobalActions( final Actions actions )
+	{
+		actions.namedAction( actionExport, TXT_EXPORT_KEYS );
+	}
+
 	/** enables/disables menu items based on the availability of some project */
 	private void updateEnabledActions()
 	{
@@ -108,8 +122,9 @@ public class PlainTextFileExport extends AbstractContextual implements MamutPlug
 		actionExport.setEnabled( appModel != null );
 	}
 	//------------------------------------------------------------------------
-	private LogService logServiceRef; //(re)defined with every call to this.exporter()
+	//------------------------------------------------------------------------
 
+	private LogService logServiceRef; //(re)defined with every call to this.exporter()
 
 	/** opens the output file dialog, runs the export,
 	    and pops-up a "done+hints" message window */
