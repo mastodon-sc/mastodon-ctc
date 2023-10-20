@@ -5,9 +5,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Scanner;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.mastodon.mamut.MamutAppModel;
-import org.mastodon.model.AbstractModelImporter;
 import org.mastodon.mamut.model.Link;
 import org.mastodon.mamut.model.Model;
 import org.mastodon.mamut.model.ModelGraph;
@@ -68,7 +68,8 @@ public class ReadPointsTXT
 		final double[] coords = new double[3];
 		int time;
 
-		new AbstractModelImporter< Model >( model ){{ startImport(); }};
+		final ReentrantReadWriteLock lock = graph.getLock();
+		lock.writeLock().lock();
 
 		try ( Scanner s = new Scanner(new BufferedReader(new FileReader(selectedFile.getAbsolutePath()))) ) {
 			while (s.hasNext())
@@ -106,12 +107,13 @@ public class ReadPointsTXT
 			//report the original error message further
 			e.printStackTrace();
 		} finally {
-			new AbstractModelImporter< Model >( model ){{ finishImport(); }};
+			lock.writeLock().unlock();
 		}
 
 		graph.vertices().releaseRef(spot);
 		graph.vertices().releaseRef(oSpot);
 		graph.releaseRef(linkRef);
+		model.getGraph().notifyGraphChanged();
 
 		//this.context().getService(LogService.class).log().info("Loaded file: "+selectedFile.getAbsolutePath());
 		System.out.println("Loaded file: "+selectedFile.getAbsolutePath());
