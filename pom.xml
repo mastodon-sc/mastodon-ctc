@@ -10,7 +10,7 @@
 
 	<groupId>org.mastodon</groupId>
 	<artifactId>mastodon-ctc</artifactId>
-	<version>0.1.2-SNAPSHOT</version>
+	<version>0.1.3-SNAPSHOT</version>
 
 	<organization>
 		<name>Mastodon Science</name>
