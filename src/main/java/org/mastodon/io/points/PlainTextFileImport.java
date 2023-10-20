@@ -8,7 +8,6 @@ import org.mastodon.mamut.model.Spot;
 import org.mastodon.mamut.plugin.MamutPluginAppModel;
 import org.mastodon.ui.util.ExtensionFileFilter;
 import org.mastodon.ui.util.FileChooser;
-import org.scijava.AbstractContextual;
 import org.scijava.log.LogService;
 import org.scijava.log.Logger;
 
@@ -19,11 +18,17 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class PlainTextFileImport extends AbstractContextual {
+public class PlainTextFileImport
+{
+	private final MamutPluginAppModel pluginAppModel;
+	private final LogService logService;
 
-	MamutPluginAppModel pluginAppModel;
+	public PlainTextFileImport(final MamutPluginAppModel appModel, final LogService logService) {
+		this.pluginAppModel = appModel;
+		this.logService = logService;
+	}
 
-	void importer() {
+	public void importer() {
 		final File selectedFile = FileChooser.chooseFile(null, null,
 				new ExtensionFileFilter("txt"),
 				"Choose TXT file to write tracks into:",
@@ -33,9 +38,7 @@ public class PlainTextFileImport extends AbstractContextual {
 		//cancel button ?
 		if (selectedFile == null) return;
 
-		final Logger logger = this.getContext()
-				.getService(LogService.class)
-				.subLogger("Importing plain text file");
+		final Logger logger = logService.subLogger("Importing plain text file");
 
 		final AffineTransform3D transform = new AffineTransform3D();
 		pluginAppModel.getAppModel().getSharedBdvData().getSources().get(0)
