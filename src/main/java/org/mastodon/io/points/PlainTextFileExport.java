@@ -1,134 +1,48 @@
 package org.mastodon.io.points;
 
-import static org.mastodon.app.ui.ViewMenuBuilder.item;
-import static org.mastodon.app.ui.ViewMenuBuilder.menu;
-
 import java.io.File;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
-import java.util.*;
-
-import org.mastodon.app.ui.ViewMenuBuilder;
 import org.mastodon.collection.RefList;
-import org.mastodon.mamut.plugin.MamutPlugin;
 import org.mastodon.mamut.plugin.MamutPluginAppModel;
-import org.mastodon.ui.keymap.CommandDescriptionProvider;
-import org.mastodon.ui.keymap.CommandDescriptions;
-import org.mastodon.ui.keymap.KeyConfigContexts;
-
 import org.mastodon.ui.util.FileChooser;
 import org.mastodon.ui.util.ExtensionFileFilter;
-
 import net.imglib2.realtransform.AffineTransform3D;
 import org.mastodon.spatial.SpatioTemporalIndex;
-import org.mastodon.mamut.MamutAppModel;
 import org.mastodon.mamut.model.Model;
 import org.mastodon.mamut.model.ModelGraph;
 import org.mastodon.mamut.model.Spot;
 import org.mastodon.mamut.model.Link;
-
 import org.mastodon.collection.RefIntMap;
 import org.mastodon.collection.RefMaps;
 import org.mastodon.collection.RefCollections;
 import org.mastodon.collection.RefCollection;
-
-import org.scijava.AbstractContextual;
-import org.scijava.plugin.Plugin;
-import org.scijava.ui.behaviour.util.Actions;
-import org.scijava.ui.behaviour.util.AbstractNamedAction;
-import org.scijava.ui.behaviour.util.RunnableAction;
 import org.scijava.log.LogLevel;
 import org.scijava.log.LogService;
+import org.scijava.log.Logger;
 
 
-@Plugin( type = MamutPlugin.class )
-public class PlainTextFileExport extends AbstractContextual implements MamutPlugin
+public class PlainTextFileExport
 {
-	private static final String TXT_EXPORT = "[exports] export tracks as txt file";
+	private final MamutPluginAppModel pluginAppModel;
+	private final LogService logService;
+	private Logger logger;
 
-	private static final String[] TXT_EXPORT_KEYS = { "not mapped" };
-	//------------------------------------------------------------------------
-
-
-	private static final Map< String, String > menuTexts = new HashMap<>();
-	static
-	{
-		menuTexts.put( TXT_EXPORT, "Export to plain text file" );
+	public PlainTextFileExport(final MamutPluginAppModel appModel, final LogService logService) {
+		this.pluginAppModel = appModel;
+		this.logService = logService;
 	}
-	@Override
-	public Map< String, String > getMenuTexts() { return menuTexts; }
-
-	@Override
-	public List< ViewMenuBuilder.MenuItem > getMenuItems()
-	{
-		return Collections.singletonList( menu( "Plugins",
-			menu( "Exports",
-				item( TXT_EXPORT )
-			)
-		) );
-	}
-
-	@Plugin( type = Descriptions.class )
-	public static class Descriptions extends CommandDescriptionProvider
-	{
-		public Descriptions()
-		{
-			super( KeyConfigContexts.TRACKSCHEME, KeyConfigContexts.BIGDATAVIEWER );
-		}
-
-		@Override
-		public void getCommandDescriptions( final CommandDescriptions descriptions )
-		{
-			descriptions.add(TXT_EXPORT, TXT_EXPORT_KEYS, "");
-		}
-	}
-	//------------------------------------------------------------------------
-
-
-	private final AbstractNamedAction actionExport;
-
-	/** reference to the currently available project in Mastodon */
-	private MamutPluginAppModel pluginAppModel;
-
-	/** default c'tor: creates Actions available from this plug-in */
-	public PlainTextFileExport()
-	{
-		actionExport = new RunnableAction( TXT_EXPORT, this::exporter );
-		updateEnabledActions();
-	}
-
-	/** learn about the current project's params */
-	@Override
-	public void setAppPluginModel( final MamutPluginAppModel model )
-	{
-		//the application reports back to us if some project is available
-		this.pluginAppModel = model;
-		updateEnabledActions();
-	}
-
-	/** register the actions to the application (with no shortcut keys) */
-	@Override
-	public void installGlobalActions( final Actions actions )
-	{
-		actions.namedAction( actionExport, TXT_EXPORT_KEYS );
-	}
-
-	/** enables/disables menu items based on the availability of some project */
-	private void updateEnabledActions()
-	{
-		final MamutAppModel appModel = ( pluginAppModel == null ) ? null : pluginAppModel.getAppModel();
-		actionExport.setEnabled( appModel != null );
-	}
-	//------------------------------------------------------------------------
-	//------------------------------------------------------------------------
-
-	private LogService logServiceRef; //(re)defined with every call to this.exporter()
 
 	/** opens the output file dialog, runs the export,
 	    and pops-up a "done+hints" message window */
-	private void exporter()
+	public void exporter()
 	{
 		//open a folder choosing dialog
 		final File selectedFile = FileChooser.chooseFile(null, null,
@@ -140,7 +54,7 @@ public class PlainTextFileExport extends AbstractContextual implements MamutPlug
 		//cancel button ?
 		if (selectedFile == null) return;
 
-		logServiceRef = this.getContext().getService(LogService.class).log();
+		logger = logService.subLogger("Exporting plain text file");
 
 		//writing params:
 		final String delim = "\t";
@@ -208,7 +122,7 @@ public class PlainTextFileExport extends AbstractContextual implements MamutPlug
 				//feasibility test: too many joining paths? (aka merging event)
 				if (countBackwardLinks > 1)
 				{
-					logServiceRef.log(LogLevel.ERROR,
+					logger.log(LogLevel.ERROR,
 					                  "spot "+spot.getLabel()
 					                  +" has multiple ("+countBackwardLinks
 					                  +") older-time-point links!");
@@ -245,11 +159,11 @@ public class PlainTextFileExport extends AbstractContextual implements MamutPlug
 						//the track 'ID' would have been just starting here,
 						//re-starting really means to remove it first
 						tracks.removeTrack( knownTracks.get(spot) );
-						logServiceRef.trace(spot.getLabel()+": will supersede track ID "+knownTracks.get(spot));
+						logger.trace(spot.getLabel()+": will supersede track ID "+knownTracks.get(spot));
 					}
 					else
 					{
-						logServiceRef.trace(spot.getLabel()+": will just leave the track ID "+knownTracks.get(spot));
+						logger.trace(spot.getLabel()+": will just leave the track ID "+knownTracks.get(spot));
 					}
 				}
 
@@ -258,13 +172,13 @@ public class PlainTextFileExport extends AbstractContextual implements MamutPlug
 				{
 					//start a new track
 					knownTracks.put( spot, tracks.startNewTrack( spot, time, 0 ) );
-					logServiceRef.trace(spot.getLabel()+": started track ID "+knownTracks.get(spot)+" at time "+spot.getTimepoint());
+					logger.trace(spot.getLabel()+": started track ID "+knownTracks.get(spot)+" at time "+spot.getTimepoint());
 				}
 				else //countBackwardLinks == 1
 				{
 					//prolong the existing track
 					tracks.updateTrack( spot, knownTracks.get(spot), time );
-					logServiceRef.trace(spot.getLabel()+": updated track ID "+knownTracks.get(spot)+" at time "+spot.getTimepoint());
+					logger.trace(spot.getLabel()+": updated track ID "+knownTracks.get(spot)+" at time "+spot.getTimepoint());
 				}
 
 				//multiple "followers"? feels like a division...
@@ -279,7 +193,7 @@ public class PlainTextFileExport extends AbstractContextual implements MamutPlug
 						if (knownTracks.get(sRef) == -1)
 						{
 							knownTracks.put( sRef, tracks.startNewTrack( sRef, sRef.getTimepoint(), knownTracks.get(spot) ) );
-							logServiceRef.trace(sRef.getLabel()+": started track ID "+knownTracks.get(sRef)+" at time "+sRef.getTimepoint());
+							logger.trace(sRef.getLabel()+": started track ID "+knownTracks.get(sRef)+" at time "+sRef.getTimepoint());
 						}
 					}
 					for (int n=0; n < spot.outgoingEdges().size(); ++n)
@@ -289,7 +203,7 @@ public class PlainTextFileExport extends AbstractContextual implements MamutPlug
 						if (knownTracks.get(sRef) == -1)
 						{
 							knownTracks.put( sRef, tracks.startNewTrack( sRef, sRef.getTimepoint(), knownTracks.get(spot) ) );
-							logServiceRef.trace(sRef.getLabel()+": started track ID "+knownTracks.get(sRef)+" at time "+sRef.getTimepoint());
+							logger.trace(sRef.getLabel()+": started track ID "+knownTracks.get(sRef)+" at time "+sRef.getTimepoint());
 						}
 					}
 				}
@@ -308,7 +222,7 @@ public class PlainTextFileExport extends AbstractContextual implements MamutPlug
 						if (knownTracks.get(fRef) == -1)
 						{
 							knownTracks.put( fRef, tracks.startNewTrack( fRef, fRef.getTimepoint(), knownTracks.get(spot) ) );
-							logServiceRef.trace(fRef.getLabel()+": started track ID "+knownTracks.get(fRef)+" at time "+fRef.getTimepoint());
+							logger.trace(fRef.getLabel()+": started track ID "+knownTracks.get(fRef)+" at time "+fRef.getTimepoint());
 						}
 					}
 				}
@@ -377,7 +291,7 @@ public class PlainTextFileExport extends AbstractContextual implements MamutPlug
 		}
 
 		//pop-up a "done and hints" just-OK-button window
-		logServiceRef.info("done.");
+		logger.info("done.");
 		//this.context().getService(LogService.class).log().info("Wrote file: "+selectedFile.getAbsolutePath());
 	}
 
@@ -430,13 +344,13 @@ public class PlainTextFileExport extends AbstractContextual implements MamutPlug
 				//should not happen that we had not added myself but still having parentID > 0
 				if (!foundTree)
 				{
-					logServiceRef.log(LogLevel.ERROR,
+					logger.log(LogLevel.ERROR,
 					                  "track "+ID
 					                  +" could not find the track tree of its parent "+parentID);
 				}
 				else if (sizeBefore == sizeAfter)
 				{
-					logServiceRef.log(LogLevel.ERROR,
+					logger.log(LogLevel.ERROR,
 					                  "could not add track "+ID
 					                  +" to the track tree of its parent "+parentID);
 				}
@@ -490,7 +404,7 @@ public class PlainTextFileExport extends AbstractContextual implements MamutPlug
 			}
 			else
 			{
-				logServiceRef.log(LogLevel.ERROR,
+				logger.log(LogLevel.ERROR,
 				                  "could not remove non-existing track "+ID);
 			}
 		}
