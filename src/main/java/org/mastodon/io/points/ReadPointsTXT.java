@@ -41,8 +41,6 @@ public class ReadPointsTXT
 		if (!selectedFile.canRead())
 			throw new IllegalArgumentException("Cannot read the selected file: "+selectedFile.getAbsolutePath());
 
-		Scanner s = null;
-
 		//-------------------------------------------------
 		//scanning params:
 		final String delim = "\t";
@@ -72,9 +70,7 @@ public class ReadPointsTXT
 
 		new AbstractModelImporter< Model >( model ){{ startImport(); }};
 
-		try {
-			s = new Scanner(new BufferedReader(new FileReader(selectedFile.getAbsolutePath())));
-
+		try ( Scanner s = new Scanner(new BufferedReader(new FileReader(selectedFile.getAbsolutePath()))) ) {
 			while (s.hasNext())
 			{
 				//read and prepare the spot spatial coordinate
@@ -110,15 +106,12 @@ public class ReadPointsTXT
 			//report the original error message further
 			e.printStackTrace();
 		} finally {
-			if (s != null)
-			{
-				s.close();
-			}
-			graph.vertices().releaseRef(spot);
-			graph.vertices().releaseRef(oSpot);
-			graph.releaseRef(linkRef);
 			new AbstractModelImporter< Model >( model ){{ finishImport(); }};
 		}
+
+		graph.vertices().releaseRef(spot);
+		graph.vertices().releaseRef(oSpot);
+		graph.releaseRef(linkRef);
 
 		//this.context().getService(LogService.class).log().info("Loaded file: "+selectedFile.getAbsolutePath());
 		System.out.println("Loaded file: "+selectedFile.getAbsolutePath());
