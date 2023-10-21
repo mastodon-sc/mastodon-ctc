@@ -28,6 +28,12 @@ public class PlainTextFileImport implements Command
 			style = FileWidget.OPEN_STYLE)
 	File selectedFile;
 
+	@Parameter(label = "Use radii from the file where available:")
+	boolean preferRadiusColumn = false;
+
+	@Parameter(label = "Use this radius as fallback:", min = "1")
+	double defaultRadius = 10.0;
+
 	@Parameter(persist = false)
 	MamutPluginAppModel pluginAppModel;
 
@@ -93,7 +99,7 @@ public class PlainTextFileImport implements Command
 				int parentTrackID = Integer.parseInt(tokens[5]);
 				//token[6] is the spot label
 				//token[7] may include a radius
-				double radius = tokens.length == 8 ? Double.parseDouble(tokens[7]) : 1.0;
+				double radius = preferRadiusColumn && tokens.length == 8 ? Double.parseDouble(tokens[7]) : defaultRadius;
 				//
 				//first, we create the new spot representing the just parsed line
 				graph.addVertex( spotNew ).init(tp, coord, radius).setLabel( tokens[6] );
