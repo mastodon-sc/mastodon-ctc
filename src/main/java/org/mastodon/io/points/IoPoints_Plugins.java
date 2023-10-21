@@ -221,16 +221,16 @@ public class IoPoints_Plugins extends AbstractContextual implements MamutPlugin
 
 	private void exportTXT()
 	{
-		new PlainTextFileExport(
-				pluginAppModel,
-				this.getContext().getService(LogService.class)
-			).exporter();
+		this.getContext().getService(CommandService.class).run(
+				PlainTextFileExport.class, true,
+				"pluginAppModel", pluginAppModel
+		);
 	}
 	private void importTXT()
 	{
-		new PlainTextFileImport(
-				pluginAppModel,
-				this.getContext().getService(LogService.class)
-			).importer();
+		this.getContext().getService(CommandService.class).run(
+				PlainTextFileImport.class, true,
+				"pluginAppModel", pluginAppModel
+		);
 	}
 }

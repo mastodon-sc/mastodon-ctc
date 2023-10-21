@@ -12,8 +12,6 @@ import java.util.Set;
 
 import org.mastodon.collection.RefList;
 import org.mastodon.mamut.plugin.MamutPluginAppModel;
-import org.mastodon.ui.util.FileChooser;
-import org.mastodon.ui.util.ExtensionFileFilter;
 import net.imglib2.realtransform.AffineTransform3D;
 import org.mastodon.spatial.SpatioTemporalIndex;
 import org.mastodon.mamut.model.Model;
@@ -24,34 +22,33 @@ import org.mastodon.collection.RefIntMap;
 import org.mastodon.collection.RefMaps;
 import org.mastodon.collection.RefCollections;
 import org.mastodon.collection.RefCollection;
+import org.scijava.command.Command;
 import org.scijava.log.LogLevel;
 import org.scijava.log.LogService;
 import org.scijava.log.Logger;
+import org.scijava.plugin.Parameter;
+import org.scijava.plugin.Plugin;
+import org.scijava.widget.FileWidget;
 
-
-public class PlainTextFileExport
+@Plugin( type = Command.class, name = "Exporter of spots to plain text file @ Mastodon" )
+public class PlainTextFileExport implements Command
 {
-	private final MamutPluginAppModel pluginAppModel;
-	private final LogService logService;
+	@Parameter(
+			label = "Choose TXT file to write tracks into:",
+			style = FileWidget.SAVE_STYLE)
+	File selectedFile;
+
+	@Parameter(persist = false)
+	MamutPluginAppModel pluginAppModel;
+
+	@Parameter
+	LogService logService;
+
 	private Logger logger;
 
-	public PlainTextFileExport(final MamutPluginAppModel appModel, final LogService logService) {
-		this.pluginAppModel = appModel;
-		this.logService = logService;
-	}
-
-	/** opens the output file dialog, runs the export,
-	    and pops-up a "done+hints" message window */
-	public void exporter()
+	@Override
+	public void run()
 	{
-		//open a folder choosing dialog
-		final File selectedFile = FileChooser.chooseFile(null, null,
-				new ExtensionFileFilter("txt"),
-				"Choose TXT file to write tracks into:",
-				FileChooser.DialogType.SAVE,
-				FileChooser.SelectionMode.FILES_ONLY);
-
-		//cancel button ?
 		if (selectedFile == null) return;
 
 		logger = logService.subLogger("Exporting plain text file");

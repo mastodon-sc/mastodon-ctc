@@ -6,10 +6,12 @@ import org.mastodon.collection.ref.IntRefHashMap;
 import org.mastodon.mamut.model.ModelGraph;
 import org.mastodon.mamut.model.Spot;
 import org.mastodon.mamut.plugin.MamutPluginAppModel;
-import org.mastodon.ui.util.ExtensionFileFilter;
-import org.mastodon.ui.util.FileChooser;
+import org.scijava.command.Command;
 import org.scijava.log.LogService;
 import org.scijava.log.Logger;
+import org.scijava.plugin.Parameter;
+import org.scijava.plugin.Plugin;
+import org.scijava.widget.FileWidget;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -18,24 +20,23 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class PlainTextFileImport
+@Plugin( type = Command.class, name = "Importer of spots from plain text file @ Mastodon" )
+public class PlainTextFileImport implements Command
 {
-	private final MamutPluginAppModel pluginAppModel;
-	private final LogService logService;
+	@Parameter(
+			label = "Choose TXT file to read tracks from:",
+			style = FileWidget.OPEN_STYLE)
+	File selectedFile;
 
-	public PlainTextFileImport(final MamutPluginAppModel appModel, final LogService logService) {
-		this.pluginAppModel = appModel;
-		this.logService = logService;
-	}
+	@Parameter(persist = false)
+	MamutPluginAppModel pluginAppModel;
 
-	public void importer() {
-		final File selectedFile = FileChooser.chooseFile(null, null,
-				new ExtensionFileFilter("txt"),
-				"Choose TXT file to write tracks into:",
-				FileChooser.DialogType.LOAD,
-				FileChooser.SelectionMode.FILES_ONLY);
+	@Parameter
+	LogService logService;
 
-		//cancel button ?
+	@Override
+	public void run()
+	{
 		if (selectedFile == null) return;
 
 		final Logger logger = logService.subLogger("Importing plain text file");
