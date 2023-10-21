@@ -189,38 +189,48 @@ public class IoPoints_Plugins extends AbstractContextual implements MamutPlugin
 
 	private void exportThreeColumnPointsPerTimepoints()
 	{
-		if ( pluginAppModel != null )
-			WritePointsTXT.exportThreeColumnPointsPerTimepoints( pluginAppModel.getAppModel() );
+		this.getContext().getService(CommandService.class).run(
+				WritePointsThreeColumnTXT.class, true,
+				"appModel", pluginAppModel.getAppModel()
+		);
 	}
 	private void importThreeColumnPoints()
 	{
-		if ( pluginAppModel != null )
-			ReadPointsTXT.importThreeColumnPoints( pluginAppModel.getAppModel() );
+		this.getContext().getService(CommandService.class).run(
+				ReadPointsTXT.class, true,
+				"appModel", pluginAppModel.getAppModel(),
+				"fourthColumnIsTime", false
+		);
 	}
 
 	private void exportFourColumnPoints()
 	{
-		if ( pluginAppModel != null )
-			WritePointsTXT.exportFourColumnPoints( pluginAppModel.getAppModel() );
+		this.getContext().getService(CommandService.class).run(
+				WritePointsFourColumnTXT.class, true,
+				"appModel", pluginAppModel.getAppModel()
+		);
 	}
 	private void importFourColumnPoints()
 	{
-		if ( pluginAppModel != null )
-			ReadPointsTXT.importFourColumnPoints( pluginAppModel.getAppModel() );
+		this.getContext().getService(CommandService.class).run(
+				ReadPointsTXT.class, true,
+				"appModel", pluginAppModel.getAppModel(),
+				"fourthColumnIsTime", true
+		);
 	}
 
 	private void exportTXT()
 	{
-		new PlainTextFileExport(
-				pluginAppModel,
-				this.getContext().getService(LogService.class)
-			).exporter();
+		this.getContext().getService(CommandService.class).run(
+				PlainTextFileExport.class, true,
+				"pluginAppModel", pluginAppModel
+		);
 	}
 	private void importTXT()
 	{
-		new PlainTextFileImport(
-				pluginAppModel,
-				this.getContext().getService(LogService.class)
-			).importer();
+		this.getContext().getService(CommandService.class).run(
+				PlainTextFileImport.class, true,
+				"pluginAppModel", pluginAppModel
+		);
 	}
 }

@@ -6,10 +6,12 @@ import org.mastodon.collection.ref.IntRefHashMap;
 import org.mastodon.mamut.model.ModelGraph;
 import org.mastodon.mamut.model.Spot;
 import org.mastodon.mamut.plugin.MamutPluginAppModel;
-import org.mastodon.ui.util.ExtensionFileFilter;
-import org.mastodon.ui.util.FileChooser;
+import org.scijava.command.Command;
 import org.scijava.log.LogService;
 import org.scijava.log.Logger;
+import org.scijava.plugin.Parameter;
+import org.scijava.plugin.Plugin;
+import org.scijava.widget.FileWidget;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -18,24 +20,29 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class PlainTextFileImport
+@Plugin( type = Command.class, name = "Importer of spots from plain text file @ Mastodon" )
+public class PlainTextFileImport implements Command
 {
-	private final MamutPluginAppModel pluginAppModel;
-	private final LogService logService;
+	@Parameter(
+			label = "Choose TXT file to read tracks from:",
+			style = FileWidget.OPEN_STYLE)
+	File selectedFile;
 
-	public PlainTextFileImport(final MamutPluginAppModel appModel, final LogService logService) {
-		this.pluginAppModel = appModel;
-		this.logService = logService;
-	}
+	@Parameter(label = "Use radii from the file where available:")
+	boolean preferRadiusColumn = false;
 
-	public void importer() {
-		final File selectedFile = FileChooser.chooseFile(null, null,
-				new ExtensionFileFilter("txt"),
-				"Choose TXT file to write tracks into:",
-				FileChooser.DialogType.LOAD,
-				FileChooser.SelectionMode.FILES_ONLY);
+	@Parameter(label = "Use this radius as fallback:", min = "1")
+	double defaultRadius = 10.0;
 
-		//cancel button ?
+	@Parameter(persist = false)
+	MamutPluginAppModel pluginAppModel;
+
+	@Parameter
+	LogService logService;
+
+	@Override
+	public void run()
+	{
 		if (selectedFile == null) return;
 
 		final Logger logger = logService.subLogger("Importing plain text file");
@@ -79,7 +86,7 @@ public class PlainTextFileImport
 
 				//'line' shows the first line of a "branch block"
 				String[] tokens = line.split("\t");
-				if (tokens.length != 7)
+				if (tokens.length != 7 && tokens.length != 8)
 					throw new IOException(line+" (line no. "+lineCounter
 							+") doesn't seem to be a line defining one spot.");
 
@@ -91,9 +98,11 @@ public class PlainTextFileImport
 				int currentTrackID = Integer.parseInt(tokens[4]);
 				int parentTrackID = Integer.parseInt(tokens[5]);
 				//token[6] is the spot label
+				//token[7] may include a radius
+				double radius = preferRadiusColumn && tokens.length == 8 ? Double.parseDouble(tokens[7]) : defaultRadius;
 				//
 				//first, we create the new spot representing the just parsed line
-				graph.addVertex( spotNew ).init(tp, coord, 1.0).setLabel( tokens[6] );
+				graph.addVertex( spotNew ).init(tp, coord, radius).setLabel( tokens[6] );
 
 				if ( ! trackToItsLastSpot.keySet().contains( currentTrackID ) ) {
 					//starting a new track
@@ -144,5 +153,6 @@ public class PlainTextFileImport
 
 		graph.vertices().releaseRef(spotNew);
 		graph.vertices().releaseRef(spotLastOnTheTrack);
+		logger.info("Import from plain text file: done.");
 	}
 }
