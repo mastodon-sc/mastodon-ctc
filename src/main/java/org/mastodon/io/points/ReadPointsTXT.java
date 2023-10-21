@@ -12,29 +12,74 @@ import org.mastodon.mamut.model.Link;
 import org.mastodon.mamut.model.Model;
 import org.mastodon.mamut.model.ModelGraph;
 import org.mastodon.mamut.model.Spot;
-import org.mastodon.ui.util.FileChooser;
-import org.mastodon.ui.util.ExtensionFileFilter;
 
 import net.imglib2.realtransform.AffineTransform3D;
+import org.scijava.command.Command;
+import org.scijava.command.DynamicCommand;
+import org.scijava.plugin.Parameter;
+import org.scijava.plugin.Plugin;
+import org.scijava.widget.FileWidget;
 
-public class ReadPointsTXT
+@Plugin( type = Command.class, name = "Clouds points importer @ Mastodon" )
+public class ReadPointsTXT extends DynamicCommand
 {
-	public static void importThreeColumnPoints( final MamutAppModel appModel )
-	{ importPoints(appModel,false); }
+	//visible params:
+	@Parameter(
+			label = "Choose TXT file to read the spots from points from it:",
+			style = FileWidget.OPEN_STYLE)
+	File selectedFile;
 
-	public static void importFourColumnPoints( final MamutAppModel appModel )
-	{ importPoints(appModel,true); }
+	@Parameter(
+			label = "Should input points stretch over all timepoints:",
+			initializer = "fillerOptionEnabler",
+			callback = "fillerOptionEnabler")
+	boolean fillAllTimepoints = false;
 
-	static void importPoints(final MamutAppModel appModel, final boolean fourthColumnIsTime)
+	@Parameter(
+			label = "Or (if not ticked above), add them into this one timepoint:",
+			callback = "checkTimeSpan")
+	int useThisTimepoint = 0;
+
+	private void fillerOptionEnabler() {
+		//makes sure that the option is always disabled when four-column input is used
+		if (fourthColumnIsTime) {
+			fillAllTimepoints = false;
+			useThisTimepoint = 0;
+			//this, in fact, makes this gui item not to be displayed
+			this.resolveInput("fillAllTimepoints");
+			this.resolveInput("useThisTimepoint");
+		}
+	}
+
+	private void checkTimeSpan() {
+		useThisTimepoint = Math.max( appModel.getMinTimepoint(),
+				Math.min(useThisTimepoint, appModel.getMaxTimepoint()) );
+	}
+
+	//not visible params:
+	@Parameter(persist = false)
+	boolean fourthColumnIsTime;
+
+	@Parameter(persist = false)
+	MamutAppModel appModel;
+
+	@Override
+	public void run() {
+		importPoints();
+	}
+
+	public void importThreeColumnPoints() {
+		fourthColumnIsTime = false;
+		importPoints();
+	}
+
+	public void importFourColumnPoints() {
+		fourthColumnIsTime = true;
+		importPoints();
+	}
+
+	private void importPoints()
 	{
-		//open a folder choosing dialog
-		File selectedFile = FileChooser.chooseFile(null, null,
-				new ExtensionFileFilter("txt"),
-				"Choose TXT file to read the spots from points from it:",
-				FileChooser.DialogType.LOAD,
-				FileChooser.SelectionMode.FILES_ONLY);
-
-		//cancel button ?
 		if (selectedFile == null) return;
 
 		//check we can open the file; and complain if not
@@ -91,15 +136,19 @@ public class ReadPointsTXT
 				}
 				else
 				{
-					//add to all time points available, connect them with edges
-					spot = graph.addVertex( spot ).init( timeF, coords, cov );
-					oSpot.refTo(spot);
-
-					for (int t = timeF+1; t <= timeT; ++t)
-					{
-						spot = graph.addVertex( spot ).init( t, coords, cov );
-						graph.addEdge( oSpot, spot, linkRef ).init();
+					if (fillAllTimepoints) {
+						//spread this one over all time points available, and connect them with edges
+						spot = graph.addVertex( spot ).init( timeF, coords, cov );
 						oSpot.refTo(spot);
+						for (int t = timeF+1; t <= timeT; ++t)
+						{
+							spot = graph.addVertex( spot ).init( t, coords, cov );
+							graph.addEdge( oSpot, spot, linkRef ).init();
+							oSpot.refTo(spot);
+						}
+					} else {
+						//create this one as a solist in the current time point
+						graph.addVertex( spot ).init( useThisTimepoint, coords, cov );
 					}
 				}
 			}
@@ -116,6 +165,13 @@ public class ReadPointsTXT
 		model.getGraph().notifyGraphChanged();
 
 		//this.context().getService(LogService.class).log().info("Loaded file: "+selectedFile.getAbsolutePath());
-		System.out.println("Loaded file: "+selectedFile.getAbsolutePath());
+		System.out.print("Loaded file: "+selectedFile.getAbsolutePath());
+		if (fourthColumnIsTime) {
+			System.out.println(" with explicit time points (four-columns).");
+		} else if (fillAllTimepoints) {
+			System.out.println(" and placed the same spots into all time points.");
+		} else {
+			System.out.println(" and placed the spots into time point "+useThisTimepoint+".");
+		}
 	}
 }

@@ -194,8 +194,11 @@ public class IoPoints_Plugins extends AbstractContextual implements MamutPlugin
 	}
 	private void importThreeColumnPoints()
 	{
-		if ( pluginAppModel != null )
-			ReadPointsTXT.importThreeColumnPoints( pluginAppModel.getAppModel() );
+		this.getContext().getService(CommandService.class).run(
+				ReadPointsTXT.class, true,
+				"appModel", pluginAppModel.getAppModel(),
+				"fourthColumnIsTime", false
+		);
 	}
 
 	private void exportFourColumnPoints()
@@ -205,8 +208,11 @@ public class IoPoints_Plugins extends AbstractContextual implements MamutPlugin
 	}
 	private void importFourColumnPoints()
 	{
-		if ( pluginAppModel != null )
-			ReadPointsTXT.importFourColumnPoints( pluginAppModel.getAppModel() );
+		this.getContext().getService(CommandService.class).run(
+				ReadPointsTXT.class, true,
+				"appModel", pluginAppModel.getAppModel(),
+				"fourthColumnIsTime", true
+		);
 	}
 
 	private void exportTXT()
