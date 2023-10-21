@@ -189,8 +189,10 @@ public class IoPoints_Plugins extends AbstractContextual implements MamutPlugin
 
 	private void exportThreeColumnPointsPerTimepoints()
 	{
-		if ( pluginAppModel != null )
-			WritePointsTXT.exportThreeColumnPointsPerTimepoints( pluginAppModel.getAppModel() );
+		this.getContext().getService(CommandService.class).run(
+				WritePointsThreeColumnTXT.class, true,
+				"appModel", pluginAppModel.getAppModel()
+		);
 	}
 	private void importThreeColumnPoints()
 	{
@@ -203,8 +205,10 @@ public class IoPoints_Plugins extends AbstractContextual implements MamutPlugin
 
 	private void exportFourColumnPoints()
 	{
-		if ( pluginAppModel != null )
-			WritePointsTXT.exportFourColumnPoints( pluginAppModel.getAppModel() );
+		this.getContext().getService(CommandService.class).run(
+				WritePointsFourColumnTXT.class, true,
+				"appModel", pluginAppModel.getAppModel()
+		);
 	}
 	private void importFourColumnPoints()
 	{
