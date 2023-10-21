@@ -38,6 +38,9 @@ public class PlainTextFileExport implements Command
 			style = FileWidget.SAVE_STYLE)
 	File selectedFile;
 
+	@Parameter(label = "Include optional column with spot radii:")
+	boolean doRadiusColumn = false;
+
 	@Parameter(persist = false)
 	MamutPluginAppModel pluginAppModel;
 
@@ -244,6 +247,7 @@ public class PlainTextFileExport implements Command
 		f.write("# from project "+pluginAppModel.getWindowManager().getProjectManager().getProject().getProjectRoot().getAbsolutePath());
 		f.newLine();
 		f.write("# TIME"+delim+"X"+delim+"Y"+delim+"Z"+delim+"TRACK_ID"+delim+"PARENT_TRACK_ID"+delim+"SPOT LABEL");
+		if (doRadiusColumn) f.write(delim+"SPOT RADIUS");
 		f.newLine();
 		f.newLine();
 
@@ -272,6 +276,7 @@ public class PlainTextFileExport implements Command
 					       +ID+delim
 					       +parentID+delim
 					       +s.getLabel());
+					if (doRadiusColumn) f.write(delim+Math.sqrt(s.getBoundingSphereRadiusSquared()));
 					f.newLine();
 				}
 				f.newLine();
@@ -288,7 +293,7 @@ public class PlainTextFileExport implements Command
 		}
 
 		//pop-up a "done and hints" just-OK-button window
-		logger.info("done.");
+		logger.info("Export into plain text file: done.");
 		//this.context().getService(LogService.class).log().info("Wrote file: "+selectedFile.getAbsolutePath());
 	}
 

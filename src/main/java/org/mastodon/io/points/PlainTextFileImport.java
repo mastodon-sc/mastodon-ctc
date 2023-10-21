@@ -80,7 +80,7 @@ public class PlainTextFileImport implements Command
 
 				//'line' shows the first line of a "branch block"
 				String[] tokens = line.split("\t");
-				if (tokens.length != 7)
+				if (tokens.length != 7 && tokens.length != 8)
 					throw new IOException(line+" (line no. "+lineCounter
 							+") doesn't seem to be a line defining one spot.");
 
@@ -92,9 +92,11 @@ public class PlainTextFileImport implements Command
 				int currentTrackID = Integer.parseInt(tokens[4]);
 				int parentTrackID = Integer.parseInt(tokens[5]);
 				//token[6] is the spot label
+				//token[7] may include a radius
+				double radius = tokens.length == 8 ? Double.parseDouble(tokens[7]) : 1.0;
 				//
 				//first, we create the new spot representing the just parsed line
-				graph.addVertex( spotNew ).init(tp, coord, 1.0).setLabel( tokens[6] );
+				graph.addVertex( spotNew ).init(tp, coord, radius).setLabel( tokens[6] );
 
 				if ( ! trackToItsLastSpot.keySet().contains( currentTrackID ) ) {
 					//starting a new track
@@ -145,5 +147,6 @@ public class PlainTextFileImport implements Command
 
 		graph.vertices().releaseRef(spotNew);
 		graph.vertices().releaseRef(spotLastOnTheTrack);
+		logger.info("Import from plain text file: done.");
 	}
 }
