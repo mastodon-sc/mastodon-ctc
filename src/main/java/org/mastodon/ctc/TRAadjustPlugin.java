@@ -39,7 +39,7 @@ import org.scijava.plugin.Parameter;
 
 import net.imglib2.realtransform.AffineTransform3D;
 
-import org.mastodon.mamut.MamutAppModel;
+import org.mastodon.mamut.ProjectModel;
 import org.mastodon.mamut.model.Spot;
 
 import org.mastodon.ctc.util.ImgProviders;
@@ -53,7 +53,7 @@ extends DynamicCommand
 	private LogService logService;
 
 	@Parameter(persist = false)
-	private MamutAppModel appModel;
+	private ProjectModel projectModel;
 
 	// ----------------- where to read data in -----------------
 	@Parameter(label = "Search box size in microns:", min="0")
@@ -75,11 +75,11 @@ extends DynamicCommand
 	@Override
 	public void run()
 	{
-		if (appModel.getSelectionModel().getSelectedVertices().size() == 0) return;
+		if (projectModel.getSelectionModel().getSelectedVertices().size() == 0) return;
 
 		//TODO: provide the view choosing dialog
 		final ImgProviders.ImgProvider imgSource
-			= new ImgProviders.ImgProviderFromMastodon(appModel.getSharedBdvData().getSources().get(0).getSpimSource(),0);
+			= new ImgProviders.ImgProviderFromMastodon(projectModel.getSharedBdvData().getSources().get(0).getSpimSource(),0);
 			//NB: we rely on the fact the time point 0 has metadata representative of the rest of the time lapse sequence
 
 		//some more dimensionality-based attributes
@@ -109,12 +109,12 @@ extends DynamicCommand
 		final int[] cntsPerIter = new int[safetyMaxIters+1];
 
 		//"progress bar"
-		final long pbSize = appModel.getSelectionModel().getSelectedVertices().size();
+		final long pbSize = projectModel.getSelectionModel().getSelectedVertices().size();
 		final long pbReportChunk = Math.max( pbSize / 10, 1 );
 		long pbDone = 0;
 
 		//scan over all selected spots
-		for (Spot spot : appModel.getSelectionModel().getSelectedVertices())
+		for (Spot spot : projectModel.getSelectionModel().getSelectedVertices())
 		{
 			//get current image data
 			final RandomAccess<? extends RealType<?>> ra = (RandomAccess)imgSource.getImage(spot.getTimepoint()).randomAccess();

@@ -10,16 +10,16 @@ import java.util.HashMap;
 
 import org.mastodon.app.ui.ViewMenuBuilder;
 import org.mastodon.mamut.plugin.MamutPlugin;
-import org.mastodon.mamut.plugin.MamutPluginAppModel;
-import org.mastodon.mamut.MamutAppModel;
-import org.mastodon.ui.keymap.CommandDescriptionProvider;
-import org.mastodon.ui.keymap.CommandDescriptions;
+import org.mastodon.mamut.KeyConfigScopes;
+import org.mastodon.mamut.ProjectModel;
 import org.mastodon.ui.keymap.KeyConfigContexts;
 
 import org.scijava.AbstractContextual;
 import org.scijava.plugin.Plugin;
 import org.scijava.command.CommandService;
 import org.scijava.log.LogService;
+import org.scijava.ui.behaviour.io.gui.CommandDescriptionProvider;
+import org.scijava.ui.behaviour.io.gui.CommandDescriptions;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
 import org.scijava.ui.behaviour.util.Actions;
 import org.scijava.ui.behaviour.util.RunnableAction;
@@ -89,7 +89,7 @@ public class IoPoints_Plugins extends AbstractContextual implements MamutPlugin
 	{
 		public Descriptions()
 		{
-			super( KeyConfigContexts.TRACKSCHEME, KeyConfigContexts.BIGDATAVIEWER );
+			super( KeyConfigScopes.MAMUT, KeyConfigContexts.TRACKSCHEME, KeyConfigContexts.BIGDATAVIEWER );
 		}
 
 		@Override
@@ -124,7 +124,7 @@ public class IoPoints_Plugins extends AbstractContextual implements MamutPlugin
 	private final AbstractNamedAction exportPlainTxtAction;
 	private final AbstractNamedAction importPlainTxtAction;
 
-	private MamutPluginAppModel pluginAppModel;
+	private ProjectModel projectModel;
 
 	public IoPoints_Plugins()
 	{
@@ -142,9 +142,9 @@ public class IoPoints_Plugins extends AbstractContextual implements MamutPlugin
 	}
 
 	@Override
-	public void setAppPluginModel( final MamutPluginAppModel model )
+	public void setAppPluginModel( final ProjectModel model )
 	{
-		this.pluginAppModel = model;
+		this.projectModel = model;
 		updateEnabledActions();
 	}
 
@@ -163,27 +163,26 @@ public class IoPoints_Plugins extends AbstractContextual implements MamutPlugin
 
 	private void updateEnabledActions()
 	{
-		final MamutAppModel appModel = ( pluginAppModel == null ) ? null : pluginAppModel.getAppModel();
-		importFromImagesAction.setEnabled( appModel != null );
+		importFromImagesAction.setEnabled( projectModel != null );
 
-		exportThreeColumnPointsPerTimepointsAction.setEnabled( appModel != null );
-		importThreeColumnPointsAction.setEnabled( appModel != null );
-		exportFourColumnPointsAction.setEnabled( appModel != null );
-		importFourColumnPointsAction.setEnabled( appModel != null );
+		exportThreeColumnPointsPerTimepointsAction.setEnabled( projectModel != null );
+		importThreeColumnPointsAction.setEnabled( projectModel != null );
+		exportFourColumnPointsAction.setEnabled( projectModel != null );
+		importFourColumnPointsAction.setEnabled( projectModel != null );
 
-		exportPlainTxtAction.setEnabled( appModel != null );
-		importPlainTxtAction.setEnabled( appModel != null );
+		exportPlainTxtAction.setEnabled( projectModel != null );
+		importPlainTxtAction.setEnabled( projectModel != null );
 	}
 	//------------------------------------------------------------------------
 	//------------------------------------------------------------------------
 
 	private void importFromImages()
 	{
-		if ( pluginAppModel == null ) return;
+		if ( projectModel == null ) return;
 
 		this.getContext().getService(CommandService.class).run(
 			ReadInstanceSegmentationImages.class, true,
-			"appModel", pluginAppModel.getAppModel(),
+			"projectModel", projectModel,
 			"logService", this.getContext().getService(LogService.class));
 	}
 
@@ -191,14 +190,14 @@ public class IoPoints_Plugins extends AbstractContextual implements MamutPlugin
 	{
 		this.getContext().getService(CommandService.class).run(
 				WritePointsThreeColumnTXT.class, true,
-				"appModel", pluginAppModel.getAppModel()
+				"projectModel", projectModel
 		);
 	}
 	private void importThreeColumnPoints()
 	{
 		this.getContext().getService(CommandService.class).run(
 				ReadPointsTXT.class, true,
-				"appModel", pluginAppModel.getAppModel(),
+				"projectModel", projectModel,
 				"fourthColumnIsTime", false
 		);
 	}
@@ -207,14 +206,14 @@ public class IoPoints_Plugins extends AbstractContextual implements MamutPlugin
 	{
 		this.getContext().getService(CommandService.class).run(
 				WritePointsFourColumnTXT.class, true,
-				"appModel", pluginAppModel.getAppModel()
+				"projectModel", projectModel
 		);
 	}
 	private void importFourColumnPoints()
 	{
 		this.getContext().getService(CommandService.class).run(
 				ReadPointsTXT.class, true,
-				"appModel", pluginAppModel.getAppModel(),
+				"projectModel", projectModel,
 				"fourthColumnIsTime", true
 		);
 	}
@@ -223,14 +222,14 @@ public class IoPoints_Plugins extends AbstractContextual implements MamutPlugin
 	{
 		this.getContext().getService(CommandService.class).run(
 				PlainTextFileExport.class, true,
-				"pluginAppModel", pluginAppModel
+				"projectModel", projectModel
 		);
 	}
 	private void importTXT()
 	{
 		this.getContext().getService(CommandService.class).run(
 				PlainTextFileImport.class, true,
-				"pluginAppModel", pluginAppModel
+				"projectModel", projectModel
 		);
 	}
 }

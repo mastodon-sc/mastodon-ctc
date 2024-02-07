@@ -38,10 +38,9 @@ import java.util.HashMap;
 
 import org.mastodon.app.ui.ViewMenuBuilder;
 import org.mastodon.mamut.plugin.MamutPlugin;
-import org.mastodon.mamut.plugin.MamutPluginAppModel;
-import org.mastodon.mamut.MamutAppModel;
-import org.mastodon.ui.keymap.CommandDescriptionProvider;
-import org.mastodon.ui.keymap.CommandDescriptions;
+import org.mastodon.mamut.KeyConfigScopes;
+import org.mastodon.mamut.ProjectModel;
+import org.mastodon.mamut.model.Model;
 import org.mastodon.ui.keymap.KeyConfigContexts;
 
 import org.scijava.log.LogService;
@@ -49,6 +48,8 @@ import org.scijava.AbstractContextual;
 import org.scijava.command.CommandService;
 import org.scijava.plugin.Plugin;
 import org.scijava.ui.behaviour.util.Actions;
+import org.scijava.ui.behaviour.io.gui.CommandDescriptionProvider;
+import org.scijava.ui.behaviour.io.gui.CommandDescriptions;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
 import org.scijava.ui.behaviour.util.RunnableAction;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
@@ -102,7 +103,7 @@ public class CTC_Plugins extends AbstractContextual implements MamutPlugin
 	{
 		public Descriptions()
 		{
-			super( KeyConfigContexts.TRACKSCHEME, KeyConfigContexts.BIGDATAVIEWER );
+			super( KeyConfigScopes.MAMUT, KeyConfigContexts.TRACKSCHEME, KeyConfigContexts.BIGDATAVIEWER );
 		}
 
 		@Override
@@ -125,7 +126,7 @@ public class CTC_Plugins extends AbstractContextual implements MamutPlugin
 	private final AbstractNamedAction actionTRAadjustNQ;
 
 	/** reference to the currently available project in Mastodon */
-	private MamutPluginAppModel pluginAppModel;
+	private ProjectModel projectModel;
 
 	/** default c'tor: creates Actions available from this plug-in */
 	public CTC_Plugins()
@@ -151,22 +152,21 @@ public class CTC_Plugins extends AbstractContextual implements MamutPlugin
 
 	/** learn about the current project's params */
 	@Override
-	public void setAppPluginModel( final MamutPluginAppModel model )
+	public void setAppPluginModel( final ProjectModel model )
 	{
 		//the application reports back to us if some project is available
-		this.pluginAppModel = model;
+		this.projectModel = model;
 		updateEnabledActions();
 	}
 
 	/** enables/disables menu items based on the availability of some project */
 	private void updateEnabledActions()
 	{
-		final MamutAppModel appModel = ( pluginAppModel == null ) ? null : pluginAppModel.getAppModel();
-		actionImport.setEnabled( appModel != null );
-		actionExport.setEnabled( appModel != null );
-		actionTRAreview.setEnabled( appModel != null );
-		actionTRAadjust.setEnabled( appModel != null );
-		actionTRAadjustNQ.setEnabled( appModel != null );
+		actionImport.setEnabled( projectModel != null );
+		actionExport.setEnabled( projectModel != null );
+		actionTRAreview.setEnabled( projectModel != null );
+		actionTRAadjust.setEnabled( projectModel != null );
+		actionTRAadjustNQ.setEnabled( projectModel != null );
 	}
 	//------------------------------------------------------------------------
 	//------------------------------------------------------------------------
@@ -178,7 +178,7 @@ public class CTC_Plugins extends AbstractContextual implements MamutPlugin
 	{
 		this.getContext().getService(CommandService.class).run(
 			ImporterPlugin.class, true,
-			"appModel", pluginAppModel.getAppModel(),
+			"projectModel", projectModel,
 			"logService", this.getContext().getService(LogService.class));
 	}
 
@@ -189,7 +189,7 @@ public class CTC_Plugins extends AbstractContextual implements MamutPlugin
 		this.getContext().getService(CommandService.class).run(
 			ExporterPlugin.class, true,
 			"outImgVoxelType", new UnsignedShortType(),
-			"appModel", pluginAppModel.getAppModel(),
+			"projectModel", projectModel,
 			"logService", this.getContext().getService(LogService.class));
 	}
 
@@ -198,7 +198,7 @@ public class CTC_Plugins extends AbstractContextual implements MamutPlugin
 	{
 		this.getContext().getService(CommandService.class).run(
 			TRAreviewPlugin.class, true,
-			"appModel", pluginAppModel.getAppModel(),
+			"projectModel", projectModel,
 			"logService", this.getContext().getService(LogService.class));
 	}
 
@@ -206,7 +206,7 @@ public class CTC_Plugins extends AbstractContextual implements MamutPlugin
 	{
 		this.getContext().getService(CommandService.class).run(
 			TRAadjustPlugin.class, true,
-			"appModel", pluginAppModel.getAppModel(),
+			"projectModel", projectModel,
 			"logService", this.getContext().getService(LogService.class));
 	}
 
@@ -228,7 +228,7 @@ public class CTC_Plugins extends AbstractContextual implements MamutPlugin
 		//just do the job...
 		this.getContext().getService(CommandService.class).run(
 			TRAadjustPlugin.class, true,
-			"appModel", pluginAppModel.getAppModel(),
+			"projectModel", projectModel,
 			"logService", logService,
 			"boxSizeUM", boxSize,
 			"repeatUntilNoChange", repeat,

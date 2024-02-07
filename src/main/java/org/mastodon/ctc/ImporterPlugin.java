@@ -61,7 +61,7 @@ import net.imglib2.util.LinAlgHelpers;
 
 import org.mastodon.ui.util.FileChooser;
 import org.mastodon.ui.util.ExtensionFileFilter;
-import org.mastodon.mamut.MamutAppModel;
+import org.mastodon.mamut.ProjectModel;
 import org.mastodon.model.AbstractModelImporter;
 import org.mastodon.mamut.model.Spot;
 import org.mastodon.mamut.model.Link;
@@ -84,7 +84,7 @@ extends DynamicCommand
 	private LogService logService;
 
 	@Parameter(persist = false)
-	private MamutAppModel appModel;
+	private ProjectModel projectModel;
 
 	// ----------------- where to read data in -----------------
 	@Parameter(label = "From where to import CTC tracking:",
@@ -100,7 +100,7 @@ extends DynamicCommand
 	final ArrayList<String> choices = new ArrayList<>(20);
 	void encodeImgSourceChoices()
 	{
-		final ArrayList<SourceAndConverter<?> > mSources = appModel.getSharedBdvData().getSources();
+		final ArrayList<SourceAndConverter<?> > mSources = projectModel.getSharedBdvData().getSources();
 		for (int i = 0; i < mSources.size(); ++i)
 			choices.add( "View: "+mSources.get(i).getSpimSource().getName() );
 		choices.add( "CTC: result data" );
@@ -110,15 +110,15 @@ extends DynamicCommand
 
 		//provide some default presets
 		MutableModuleItem<Integer> tItem = getInfo().getMutableInput("timeFrom", Integer.class);
-		tItem.setMinimumValue(appModel.getMinTimepoint());
-		tItem.setMaximumValue(appModel.getMaxTimepoint());
+		tItem.setMinimumValue(projectModel.getMinTimepoint());
+		tItem.setMaximumValue(projectModel.getMaxTimepoint());
 
 		tItem = getInfo().getMutableInput("timeTill", Integer.class);
-		tItem.setMinimumValue(appModel.getMinTimepoint());
-		tItem.setMaximumValue(appModel.getMaxTimepoint());
+		tItem.setMinimumValue(projectModel.getMinTimepoint());
+		tItem.setMaximumValue(projectModel.getMaxTimepoint());
 
-		timeFrom = appModel.getMinTimepoint();
-		timeTill = appModel.getMaxTimepoint();
+		timeFrom = projectModel.getMinTimepoint();
+		timeTill = projectModel.getMaxTimepoint();
 
 		//make sure this will always appear in the menu
 		this.unresolveInput("timeFrom");
@@ -186,7 +186,7 @@ extends DynamicCommand
 			//some project's view, have to find the right one
 			for (int i = 0; i < choices.size(); ++i)
 			if (imgSourceChoice.startsWith(choices.get(i)))
-				return new ImgProviders.ImgProviderFromMastodon(appModel.getSharedBdvData().getSources().get(i).getSpimSource(),timeFrom);
+				return new ImgProviders.ImgProviderFromMastodon(projectModel.getSharedBdvData().getSources().get(i).getSpimSource(),timeFrom);
 
 			//else not found... strange...
 			return null;
@@ -210,7 +210,7 @@ extends DynamicCommand
 		               +" "+imgSource.getVoxelDimensions().unit()+"/px");
 
 		//define some shortcut variables
-		final Model model = appModel.getModel();
+		final Model model = projectModel.getModel();
 		final ModelGraph modelGraph = model.getGraph();
 
 		//debug report
