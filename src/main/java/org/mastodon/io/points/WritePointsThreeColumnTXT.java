@@ -5,7 +5,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import org.mastodon.mamut.MamutAppModel;
+import org.mastodon.mamut.ProjectModel;
 import org.mastodon.mamut.model.Spot;
 import org.mastodon.spatial.SpatioTemporalIndex;
 
@@ -34,10 +34,10 @@ public class WritePointsThreeColumnTXT implements Command
 	int timeT = 1;
 
 	private void timepointsCheck() {
-		timeF = Math.max( appModel.getMinTimepoint(),
-				Math.min(timeF, appModel.getMaxTimepoint()) );
-		timeT = Math.max( appModel.getMinTimepoint(),
-				Math.min(timeT, appModel.getMaxTimepoint()) );
+		timeF = Math.max( projectModel.getMinTimepoint(),
+				Math.min(timeF, projectModel.getMaxTimepoint()) );
+		timeT = Math.max( projectModel.getMinTimepoint(),
+				Math.min(timeT, projectModel.getMaxTimepoint()) );
 
 		if (timeT < timeF) timeT = timeF;
 	}
@@ -46,7 +46,7 @@ public class WritePointsThreeColumnTXT implements Command
 	String fileNamePattern = "pointCloud_t%04d.txt";
 
 	@Parameter(persist = false)
-	MamutAppModel appModel;
+	ProjectModel projectModel;
 
 	@Override
 	public void run()
@@ -63,11 +63,11 @@ public class WritePointsThreeColumnTXT implements Command
 		//-------------------------------------------------
 
 		AffineTransform3D transform = new AffineTransform3D();
-		appModel.getSharedBdvData().getSources().get(0).getSpimSource().getSourceTransform(0,0, transform);
+		projectModel.getSharedBdvData().getSources().get(0).getSpimSource().getSourceTransform(0,0, transform);
 		transform = transform.inverse();
 		final double[] coords = new double[3];
 
-		final SpatioTemporalIndex< Spot > spots = appModel.getModel().getSpatioTemporalIndex();
+		final SpatioTemporalIndex< Spot > spots = projectModel.getModel().getSpatioTemporalIndex();
 		BufferedWriter f;
 
 		try

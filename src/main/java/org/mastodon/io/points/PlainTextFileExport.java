@@ -11,12 +11,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.mastodon.collection.RefList;
-import org.mastodon.mamut.plugin.MamutPluginAppModel;
 import net.imglib2.realtransform.AffineTransform3D;
 import org.mastodon.spatial.SpatioTemporalIndex;
 import org.mastodon.mamut.model.Model;
 import org.mastodon.mamut.model.ModelGraph;
 import org.mastodon.mamut.model.Spot;
+import org.mastodon.mamut.ProjectModel;
 import org.mastodon.mamut.model.Link;
 import org.mastodon.collection.RefIntMap;
 import org.mastodon.collection.RefMaps;
@@ -42,7 +42,7 @@ public class PlainTextFileExport implements Command
 	boolean doRadiusColumn = false;
 
 	@Parameter(persist = false)
-	MamutPluginAppModel pluginAppModel;
+	ProjectModel projectModel;
 
 	@Parameter
 	LogService logService;
@@ -58,15 +58,15 @@ public class PlainTextFileExport implements Command
 
 		//writing params:
 		final String delim = "\t";
-		final int timeFrom = pluginAppModel.getAppModel().getMinTimepoint();
-		final int timeTill = pluginAppModel.getAppModel().getMaxTimepoint();
+		final int timeFrom = projectModel.getMinTimepoint();
+		final int timeTill = projectModel.getMaxTimepoint();
 
 		//shortcuts to the data
-		final Model      model      = pluginAppModel.getAppModel().getModel();
+		final Model      model      = projectModel.getModel();
 		final ModelGraph modelGraph = model.getGraph();
 
 		AffineTransform3D transform = new AffineTransform3D();
-		pluginAppModel.getAppModel().getSharedBdvData().getSources().get(0).getSpimSource().getSourceTransform(0,0, transform);
+		projectModel.getSharedBdvData().getSources().get(0).getSpimSource().getSourceTransform(0,0, transform);
 		transform = transform.inverse();
 		//NB: is now world2img transform
 		//-------------------------------------------------
@@ -244,7 +244,7 @@ public class PlainTextFileExport implements Command
 		final BufferedWriter f
 			= new BufferedWriter( new FileWriter(selectedFile.getAbsolutePath()) );
 
-		f.write("# from project "+pluginAppModel.getWindowManager().getProjectManager().getProject().getProjectRoot().getAbsolutePath());
+		f.write("# from project "+projectModel.getProject().getProjectRoot().getAbsolutePath());
 		f.newLine();
 		f.write("# TIME"+delim+"X"+delim+"Y"+delim+"Z"+delim+"TRACK_ID"+delim+"PARENT_TRACK_ID"+delim+"SPOT LABEL");
 		if (doRadiusColumn) f.write(delim+"SPOT RADIUS");

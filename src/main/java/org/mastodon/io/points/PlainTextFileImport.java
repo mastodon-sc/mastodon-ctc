@@ -3,9 +3,9 @@ package org.mastodon.io.points;
 import net.imglib2.realtransform.AffineTransform3D;
 import org.mastodon.collection.IntRefMap;
 import org.mastodon.collection.ref.IntRefHashMap;
+import org.mastodon.mamut.ProjectModel;
 import org.mastodon.mamut.model.ModelGraph;
 import org.mastodon.mamut.model.Spot;
-import org.mastodon.mamut.plugin.MamutPluginAppModel;
 import org.scijava.command.Command;
 import org.scijava.log.LogService;
 import org.scijava.log.Logger;
@@ -35,7 +35,7 @@ public class PlainTextFileImport implements Command
 	double defaultRadius = 10.0;
 
 	@Parameter(persist = false)
-	MamutPluginAppModel pluginAppModel;
+	ProjectModel projectModel;
 
 	@Parameter
 	LogService logService;
@@ -48,12 +48,12 @@ public class PlainTextFileImport implements Command
 		final Logger logger = logService.subLogger("Importing plain text file");
 
 		final AffineTransform3D transform = new AffineTransform3D();
-		pluginAppModel.getAppModel().getSharedBdvData().getSources().get(0)
+		projectModel.getSharedBdvData().getSources().get(0)
 				.getSpimSource().getSourceTransform(0,0, transform);
 		//NB: is now img2world transform
 		final double[] coord = new double[3];
 
-		final ModelGraph graph = pluginAppModel.getAppModel().getModel().getGraph(); //shortcut only...
+		final ModelGraph graph = projectModel.getModel().getGraph(); //shortcut only...
 		//
 		//maintain info about the last spot in a given track
 		IntRefMap<Spot> trackToItsLastSpot = new IntRefHashMap<>(

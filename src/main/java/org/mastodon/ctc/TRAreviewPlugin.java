@@ -53,7 +53,7 @@ import org.scijava.command.DynamicCommand;
 import org.scijava.plugin.Plugin;
 import org.scijava.plugin.Parameter;
 
-import org.mastodon.mamut.MamutAppModel;
+import org.mastodon.mamut.ProjectModel;
 import org.mastodon.mamut.model.Spot;
 import org.mastodon.mamut.model.Link;
 import org.mastodon.mamut.model.Model;
@@ -70,7 +70,7 @@ extends DynamicCommand
 	private LogService logService;
 
 	@Parameter(persist = false)
-	private MamutAppModel appModel;
+	private ProjectModel projectModel;
 
 	// ----------------- where to read data in -----------------
 	@Parameter(label = "Review from this time point:", min="0")
@@ -148,9 +148,9 @@ extends DynamicCommand
 		if (currentProblemIdx >= problemList.size()) currentProblemIdx = problemList.size()-1;
 
 		problemList.get( currentProblemIdx, oSpot );
-		appModel.getHighlightModel().highlightVertex(oSpot);
+		projectModel.getHighlightModel().highlightVertex(oSpot);
 		if (myGroupHandle != null)
-			myGroupHandle.getModel(appModel.NAVIGATION).notifyNavigateToVertex(oSpot);
+			myGroupHandle.getModel(projectModel.NAVIGATION).notifyNavigateToVertex(oSpot);
 
 		if (pbar != null) pbar.setProgress(currentProblemIdx);
 		if (pMsg != null) pMsg.setText( problemDesc.get(currentProblemIdx) );
@@ -161,7 +161,7 @@ extends DynamicCommand
 		@Override
 		public void focusChanged()
 		{
-			appModel.getFocusModel().getFocusedVertex(fSpot);
+			projectModel.getFocusModel().getFocusedVertex(fSpot);
 			//System.out.println("clicked on "+fSpot.getLabel());
 
 			int newIdx = problemList.lastIndexOf(fSpot);
@@ -186,7 +186,7 @@ extends DynamicCommand
 	{
 		//TODO: provide the view choosing dialog
 		final ImgProviders.ImgProvider imgSource
-			= new ImgProviders.ImgProviderFromMastodon(appModel.getSharedBdvData().getSources().get(0).getSpimSource(),timeFrom);
+			= new ImgProviders.ImgProviderFromMastodon(projectModel.getSharedBdvData().getSources().get(0).getSpimSource(),timeFrom);
 
 		logService.info("Considering resolution: "+imgSource.getVoxelDimensions().dimension(0)
 		               +" x "+imgSource.getVoxelDimensions().dimension(1)
@@ -194,7 +194,7 @@ extends DynamicCommand
 		               +" "+imgSource.getVoxelDimensions().unit()+"/px");
 
 		//define some shortcut variables
-		final Model model = appModel.getModel();
+		final Model model = projectModel.getModel();
 		final ModelGraph modelGraph = model.getGraph();
 
 		//debug report
@@ -207,9 +207,9 @@ extends DynamicCommand
 		if (navigateToClickedSpot)
 		{
 			fSpot = modelGraph.vertices().createRef();
-			appModel.getFocusModel().listeners().add( tryToNavToProblem );
+			projectModel.getFocusModel().listeners().add( tryToNavToProblem );
 		}
-		myGroupHandle = appModel.getGroupManager().createGroupHandle();
+		myGroupHandle = projectModel.getGroupManager().createGroupHandle();
 
 		//release the shared proxy objects
 		class MyWindowAdapter extends WindowAdapter
@@ -222,10 +222,10 @@ extends DynamicCommand
 
 			public void windowClosing(final JFrame closeThisFrameToo)
 			{
-				appModel.getGroupManager().removeGroupHandle( myGroupHandle );
+				projectModel.getGroupManager().removeGroupHandle( myGroupHandle );
 				if (navigateToClickedSpot)
 				{
-					appModel.getFocusModel().listeners().remove( tryToNavToProblem );
+					projectModel.getFocusModel().listeners().remove( tryToNavToProblem );
 					modelGraph.vertices().releaseRef(fSpot);
 				}
 				modelGraph.vertices().releaseRef(oSpot);
@@ -261,9 +261,9 @@ extends DynamicCommand
 		Button pbtn = new Button("Select all issues");
 		pbtn.addActionListener( (action) ->
 			{
-				appModel.getSelectionModel().clearSelection();
+				projectModel.getSelectionModel().clearSelection();
 				for (final Spot s : problemList)
-					appModel.getSelectionModel().setSelected(s,true);
+					projectModel.getSelectionModel().setSelected(s,true);
 			} );
 		pbtnPanel.add(pbtn);
 
@@ -289,7 +289,7 @@ extends DynamicCommand
 
 
 		//create the problem list
-		problemList = RefCollections.createRefList( appModel.getModel().getGraph().vertices(),1000);
+		problemList = RefCollections.createRefList( projectModel.getModel().getGraph().vertices(),1000);
 		problemDesc = new ArrayList<>(1000);
 
 		pbar.setMinimum(timeFrom);
@@ -301,7 +301,7 @@ extends DynamicCommand
 		int lastTrackId = 0;
 
 		final SpatioTemporalIndex< Spot > spots = model.getSpatioTemporalIndex();
-		final RefList< Spot > rootsList = RefCollections.createRefList( appModel.getModel().getGraph().vertices(),1000);
+		final RefList< Spot > rootsList = RefCollections.createRefList( projectModel.getModel().getGraph().vertices(),1000);
 
 		for (int timePoint = timeFrom; timePoint <= timeTill; ++timePoint)
 		for ( final Spot spot : spots.getSpatialIndex( timePoint ) )

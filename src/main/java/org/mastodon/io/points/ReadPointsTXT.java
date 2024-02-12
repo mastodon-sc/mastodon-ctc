@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.Scanner;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.mastodon.mamut.MamutAppModel;
+import org.mastodon.mamut.ProjectModel;
 import org.mastodon.mamut.model.Link;
 import org.mastodon.mamut.model.Model;
 import org.mastodon.mamut.model.ModelGraph;
@@ -52,8 +52,8 @@ public class ReadPointsTXT extends DynamicCommand
 	}
 
 	private void checkTimeSpan() {
-		useThisTimepoint = Math.max( appModel.getMinTimepoint(),
-				Math.min(useThisTimepoint, appModel.getMaxTimepoint()) );
+		useThisTimepoint = Math.max( projectModel.getMinTimepoint(),
+				Math.min(useThisTimepoint, projectModel.getMaxTimepoint()) );
 	}
 
 	//not visible params:
@@ -61,7 +61,7 @@ public class ReadPointsTXT extends DynamicCommand
 	boolean fourthColumnIsTime;
 
 	@Parameter(persist = false)
-	MamutAppModel appModel;
+	ProjectModel projectModel;
 
 	@Override
 	public void run() {
@@ -98,17 +98,17 @@ public class ReadPointsTXT extends DynamicCommand
 		cov[1][1] = spotRadius*spotRadius;
 		cov[2][2] = spotRadius*spotRadius;
 
-		final Model model = appModel.getModel();
+		final Model model = projectModel.getModel();
 		final ModelGraph graph = model.getGraph();
 		Spot spot = graph.vertices().createRef();
 		final Spot oSpot = graph.vertices().createRef();
 		final Link linkRef = graph.edgeRef();
 
 		final AffineTransform3D transform = new AffineTransform3D();
-		appModel.getSharedBdvData().getSources().get(0).getSpimSource().getSourceTransform(0,0, transform);
+		projectModel.getSharedBdvData().getSources().get(0).getSpimSource().getSourceTransform(0,0, transform);
 
-		final int timeF = appModel.getMinTimepoint();
-		final int timeT = appModel.getMaxTimepoint();
+		final int timeF = projectModel.getMinTimepoint();
+		final int timeT = projectModel.getMaxTimepoint();
 
 		final double[] coords = new double[3];
 		int time;

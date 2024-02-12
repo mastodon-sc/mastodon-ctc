@@ -61,7 +61,7 @@ import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.Util;
 import net.imglib2.view.Views;
 
-import org.mastodon.mamut.MamutAppModel;
+import org.mastodon.mamut.ProjectModel;
 import org.mastodon.mamut.model.Spot;
 import org.mastodon.mamut.model.Link;
 import org.mastodon.mamut.model.Model;
@@ -84,7 +84,7 @@ extends DynamicCommand
 	private LogService logService;
 
 	@Parameter(persist = false)
-	private MamutAppModel appModel;
+	private ProjectModel projectModel;
 
 	// ----------------- where to store products -----------------
 	@Parameter(label = "Choose GT folder with TRA folder inside:", style = FileWidget.DIRECTORY_STYLE,
@@ -115,22 +115,22 @@ extends DynamicCommand
 	final ArrayList<String> choices = new ArrayList<>(20);
 	void encodeImgSourceChoices()
 	{
-		final ArrayList<SourceAndConverter<?>> mSources = appModel.getSharedBdvData().getSources();
+		final ArrayList<SourceAndConverter<?>> mSources = projectModel.getSharedBdvData().getSources();
 		for (int i = 0; i < mSources.size(); ++i)
 			choices.add( "View: "+mSources.get(i).getSpimSource().getName() );
 		getInfo().getMutableInput("imgSourceChoice", String.class).setChoices( choices );
 
 		//provide some default presets
 		MutableModuleItem<Integer> tItem = getInfo().getMutableInput("timeFrom", Integer.class);
-		tItem.setMinimumValue(appModel.getMinTimepoint());
-		tItem.setMaximumValue(appModel.getMaxTimepoint());
+		tItem.setMinimumValue(projectModel.getMinTimepoint());
+		tItem.setMaximumValue(projectModel.getMaxTimepoint());
 
 		tItem = getInfo().getMutableInput("timeTill", Integer.class);
-		tItem.setMinimumValue(appModel.getMinTimepoint());
-		tItem.setMaximumValue(appModel.getMaxTimepoint());
+		tItem.setMinimumValue(projectModel.getMinTimepoint());
+		tItem.setMaximumValue(projectModel.getMaxTimepoint());
 
-		timeFrom = appModel.getMinTimepoint();
-		timeTill = appModel.getMaxTimepoint();
+		timeFrom = projectModel.getMinTimepoint();
+		timeTill = projectModel.getMaxTimepoint();
 
 		//make sure this will always appear in the menu
 		this.unresolveInput("timeFrom");
@@ -142,7 +142,7 @@ extends DynamicCommand
 		//some project's view, have to find the right one
 		for (int i = 0; i < choices.size(); ++i)
 		if (imgSourceChoice.startsWith(choices.get(i)))
-			return appModel.getSharedBdvData().getSources().get(i).getSpimSource();
+			return projectModel.getSharedBdvData().getSources().get(i).getSpimSource();
 
 		//else not found... strange...
 		return null;
@@ -207,7 +207,7 @@ extends DynamicCommand
 		logService.info("Output marker is      : "+markerShape.printInfo()+", in "+imgSource.getVoxelDimensions().unit());
 
 		//define some shortcut variables
-		final Model model = appModel.getModel();
+		final Model model = projectModel.getModel();
 		final ModelGraph modelGraph = model.getGraph();
 
 		//debug report
