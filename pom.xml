@@ -46,7 +46,8 @@
 
 	<contributors>
 		<contributor>
-			<name>none</name>
+			<name>Alex Herbert</name>
+			<url>https://github.com/aherbert</url>
 		</contributor>
 	</contributors>
 
@@ -126,7 +127,7 @@
 		<package-name>org.mastodon</package-name>
 
 		<license.licenseName>bsd_2</license.licenseName>
-		<license.projectName>mastodon-collaborative</license.projectName>
+		<license.projectName>mastodon-ctc</license.projectName>
 		<license.organizationName>Mastodon authors</license.organizationName>
 		<license.copyrightOwners>Vladimir Ulman</license.copyrightOwners>
 
