@@ -17,6 +17,7 @@ import org.mastodon.mamut.io.project.MamutProject;
 import org.mastodon.mamut.model.Model;
 import org.mastodon.mamut.model.ModelGraph;
 import org.mastodon.mamut.model.Spot;
+import org.mastodon.mamut.views.bdv.MamutViewBdv;
 import org.mastodon.mamut.views.trackscheme.MamutViewTrackScheme;
 import org.mastodon.spatial.SpatialIndex;
 import org.mastodon.tracking.linking.LinkingUtils;
@@ -26,6 +27,7 @@ import org.mastodon.tracking.mamut.trackmate.Settings;
 import org.mastodon.tracking.mamut.trackmate.TrackMate;
 import org.mastodon.ctc.util.ImgProviders;
 import org.mastodon.mamut.ProjectModel;
+import org.mastodon.views.bdv.BigDataViewerMamut;
 import org.mastodon.views.bdv.SharedBigDataViewerData;
 
 import static org.mastodon.tracking.detection.DetectorKeys.KEY_MAX_TIMEPOINT;
@@ -207,8 +209,11 @@ public class AutonomousFullTracker {
 			//distance = 70;
 			link(projectModel, distance, timeFrom,timeTill);
 
-			//show trackmate window for review for now...
-			projectModel.getWindowManager().createView(MamutViewTrackScheme.class);
+			//for review for now: show trackmate and bdv windows, and link them together
+			projectModel.getWindowManager().createView(MamutViewTrackScheme.class)
+					.getGroupHandle().setGroupId(0);
+			projectModel.getWindowManager().createView(MamutViewBdv.class)
+					.getGroupHandle().setGroupId(0);
 
 		} catch (SpimDataException | IOException e) {
 			throw new RuntimeException(e);
