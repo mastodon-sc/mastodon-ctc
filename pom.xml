@@ -148,6 +148,11 @@
 			<version>${mastodon.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>org.mastodon</groupId>
+			<artifactId>mastodon-tracking</artifactId>
+			<version>1.0.0-beta-14</version>
+		</dependency>
+		<dependency>
 			<groupId>net.celltrackingchallenge</groupId>
 			<artifactId>CTC-measures</artifactId>
 			<version>1.0.3</version>
@@ -174,12 +179,9 @@
 			<artifactId>jhotdraw</artifactId>
 			<version>7.6.0</version>
 		</dependency>
-
-		<!-- for testing it... -->
 		<dependency>
-			<groupId>net.imagej</groupId>
-			<artifactId>imagej</artifactId>
-			<scope>test</scope>
+			<groupId>sc.fiji</groupId>
+			<artifactId>fiji</artifactId>
 		</dependency>
 	</dependencies>
 </project>
