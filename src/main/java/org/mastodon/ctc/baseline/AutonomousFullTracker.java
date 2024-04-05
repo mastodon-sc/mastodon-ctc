@@ -43,6 +43,8 @@ public class AutonomousFullTracker {
                      final int timeFrom,
                      final int timeTill)
     {
+		  System.out.println("Tracking using search dist = "+maxSearchDist);
+
         final Class< ? extends SpotLinkerOp> linker = SparseLAPLinkerMamut.class;
         final Map< String, Object > linkerSettings = LinkingUtils.getDefaultLAPSettingsMap();
         linkerSettings.put( KEY_MIN_TIMEPOINT, timeFrom );
@@ -132,6 +134,8 @@ public class AutonomousFullTracker {
 				}
 		  }
 
+		  print_histogram(distances);
+
 		  //get "mean" from the distances histogram (that was accumulated over all time points)
 		  double distance = 0;
 		  long totalCnt = 0;
@@ -147,6 +151,16 @@ public class AutonomousFullTracker {
 		  graph.releaseRef(spot);
 		  return distance;
     }
+
+	 static <K extends Number, V extends Number>
+	 void print_histogram(final Map<K,V> hist) {
+		  System.out.println("Histogram listing starts below...");
+		  for (K key : hist.keySet()) {
+				V val = hist.get(key);
+				System.out.println(key+"\t"+val);
+		  }
+		  System.out.println("Histogram listing ended above...");
+	 }
 
 
 	 public static void main(String[] args) {
