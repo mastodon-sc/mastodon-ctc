@@ -2,6 +2,7 @@ package org.mastodon.ctc.baseline;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import mpicbg.spim.data.SpimDataException;
@@ -167,6 +168,11 @@ public class AutonomousFullTracker {
 		System.out.println("Histogram listing ended above...");
 	}
 
+	static public void clearGraph(final ProjectModel projectModel) {
+		Iterator<Spot> it = projectModel.getModel().getSpatioTemporalIndex().iterator();
+		final ModelGraph graph = projectModel.getModel().getGraph();
+		while (it.hasNext()) graph.remove( it.next() );
+	}
 
 	public static void main(String[] args) {
 		if (args.length != 3) {
@@ -205,8 +211,8 @@ public class AutonomousFullTracker {
 						timeFrom );
 			}
 
+			clearGraph(projectModel);
 			double distance = detect(projectModel,imgProvider, timeFrom,timeTill);
-			//distance = 70;
 			link(projectModel, distance, timeFrom,timeTill);
 
 			//for review for now: show trackmate and bdv windows, and link them together
