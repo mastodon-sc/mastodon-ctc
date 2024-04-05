@@ -210,9 +210,7 @@ public class AutonomousFullTracker {
 			//show trackmate window for review for now...
 			projectModel.getWindowManager().createView(MamutViewTrackScheme.class);
 
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		} catch (SpimDataException e) {
+		} catch (SpimDataException | IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
