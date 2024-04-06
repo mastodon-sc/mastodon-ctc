@@ -226,7 +226,8 @@ public class AutonomousFullTracker {
 			projectModel.getWindowManager().createView(MamutViewBdv.class)
 					.getGroupHandle().setGroupId(0);
 */
-
+			ctx.dispose();
+			System.exit(0);
 		} catch (SpimDataException | IOException e) {
 			throw new RuntimeException(e);
 		}
