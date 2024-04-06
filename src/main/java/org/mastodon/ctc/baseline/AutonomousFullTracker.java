@@ -128,14 +128,13 @@ public class AutonomousFullTracker {
 			SpatialIndex<Spot> index = projectModel.getModel().getSpatioTemporalIndex().getSpatialIndex(t);
 			IncrementalNearestNeighborSearch<Spot> search = index.getIncrementalNearestNeighborSearch();
 			for (Spot s : index) {
-				int dist = 500;
 				search.search(s);
-				search.next();
-				if (search.hasNext()) {
-					dist = (int)Util.distance(search.next(),s);
+				search.next();           //skip over itself
+				if (search.hasNext()) {  //a potential first real neighbor?
+					int dist = (int)Util.distance(search.next(),s);
 					System.out.println("dist = "+dist);
+					distances.put(dist, distances.getOrDefault(dist,0)+1 );
 				}
-				distances.put(dist, distances.getOrDefault(dist,0)+1 );
 			}
 		}
 
@@ -163,7 +162,7 @@ public class AutonomousFullTracker {
 		System.out.println("Histogram listing starts below...");
 		for (K key : hist.keySet()) {
 			V val = hist.get(key);
-			System.out.println(key+"\t"+val);
+			System.out.println("HIST:\t"+key+"\t"+val);
 		}
 		System.out.println("Histogram listing ended above...");
 	}
