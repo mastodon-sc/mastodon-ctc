@@ -132,7 +132,7 @@ public class AutonomousFullTracker {
 				search.next();           //skip over itself
 				if (search.hasNext()) {  //a potential first real neighbor?
 					int dist = (int)Util.distance(search.next(),s);
-					System.out.println("dist = "+dist);
+					//System.out.println("dist = "+dist);
 					distances.put(dist, distances.getOrDefault(dist,0)+1 );
 				}
 			}
@@ -200,6 +200,7 @@ public class AutonomousFullTracker {
 				imgProvider = new ImgProviders.ImgProviderFromMastodon(
 						projectModel.getSharedBdvData().getSources().get(1).getSpimSource(),
 						timeFrom );
+				System.out.println(args[0]+" time span is "+timeFrom+" - "+timeTill);
 			} else {
 				//DUMMY dataset
 				//TODO; make the dummy dataset size from the first real input image
@@ -218,11 +219,13 @@ public class AutonomousFullTracker {
 			double distance = detect(projectModel,imgProvider, timeFrom,timeTill);
 			link(projectModel, distance, timeFrom,timeTill);
 
+/*
 			//for review for now: show trackmate and bdv windows, and link them together
 			projectModel.getWindowManager().createView(MamutViewTrackScheme.class)
 					.getGroupHandle().setGroupId(0);
 			projectModel.getWindowManager().createView(MamutViewBdv.class)
 					.getGroupHandle().setGroupId(0);
+*/
 
 		} catch (SpimDataException | IOException e) {
 			throw new RuntimeException(e);
