@@ -223,7 +223,7 @@ public class AutonomousFullTracker {
 	public static void main(String[] args, final Context ctx) {
 		if (args.length != 3 && args.length != 4) {
 				System.out.println("Need three params in the following order:");
-				System.out.println("  FULL_path/project.mastodon or path/folderName");
+				System.out.println("  FULL_path/project.mastodon or path/filenameTemplate.tif");
 				System.out.println("  first_time_point_to_track");
 				System.out.println("  last_time_point_to_track");
 				System.out.println("  [optional: FULL_path/save_result_into_this_project.mastodon]");
