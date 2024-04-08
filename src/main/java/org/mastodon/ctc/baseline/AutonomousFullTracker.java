@@ -140,6 +140,7 @@ public class AutonomousFullTracker {
 
 		print_histogram(distances);
 
+/*
 		//get "mean" from the distances histogram (that was accumulated over all time points)
 		double distance = 0;
 		long totalCnt = 0;
@@ -151,6 +152,32 @@ public class AutonomousFullTracker {
 		distance /= (double)totalCnt;
 		System.out.println("Mean distance between the spots: "+distance);
 		//distance /= 1.5; //4.0;
+*/
+		//find "max mode" distance in the histogram, and then when it decays to 1/10 on the right...
+		int maxModeDistance = 0;
+		int maxModeCnt = -1;
+		for (int dist : distances.keySet()) {
+			if (distances.get(dist) > maxModeCnt) {
+				maxModeCnt = distances.get(dist);
+				maxModeDistance = dist;
+			}
+		}
+		int cntThres = Math.max( (int)Math.ceil((double)maxModeCnt / 10.0), 1 );
+		double distance = 0;
+		int maxDistance = maxModeDistance;
+		for (int dist : distances.keySet()) {
+			if (dist < maxModeDistance) continue;
+			if (distances.get(dist) < cntThres) {
+				distance = dist;
+				break;
+			}
+			maxDistance = dist;
+		}
+		if (distance == 0) {
+			//"emergency break" in case no "distance under the threshold" is found
+			distance = 0.5 * (maxDistance + maxModeDistance);
+		}
+		System.out.println("mode cnt = "+maxModeCnt+" @ dist = "+maxModeDistance+", cntThres = "+cntThres+" => distance = "+distance);
 
 		graph.releaseRef(spot);
 		return distance;
