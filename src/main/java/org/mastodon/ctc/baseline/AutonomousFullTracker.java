@@ -82,7 +82,9 @@ public class AutonomousFullTracker {
 
 
 	static <T extends IntegerType<T>>
-	void findAndSetSpots(final RandomAccessibleInterval<T> img, final int time,
+	void findAndSetSpots(final RandomAccessibleInterval<T> img,
+	                     final double[] pxSizes,
+	                     final int time,
 	                     final ModelGraph graph, final Spot auxSpot) {
 
 		final Map<Integer,double[]> geomStats = new HashMap<>(500);
@@ -97,9 +99,9 @@ public class AutonomousFullTracker {
 			if (label > 0) {
 				double[] stat = geomStats.computeIfAbsent(label, k -> new double[4]);
 				c.localize(pos);
-				stat[0] += pos[0];
-				stat[1] += pos[1];
-				stat[2] += pos[2];
+				stat[0] += pos[0]*pxSizes[0];
+				stat[1] += pos[1]*pxSizes[1];
+				stat[2] += pos[2]*pxSizes[2];
 				stat[3] += 1;
 			}
 		}
@@ -125,7 +127,9 @@ public class AutonomousFullTracker {
 
 		Map<Integer,Integer> distances = new HashMap<>(500);
 		for (int t = timeFrom; t <= timeTill; ++t) {
-			findAndSetSpots((RandomAccessibleInterval)imageSrc.getImage(t),t, graph,spot);
+			findAndSetSpots((RandomAccessibleInterval)imageSrc.getImage(t),
+					  imageSrc.getVoxelDimensions().dimensionsAsDoubleArray(),
+					  t, graph,spot);
 
 			//analyze mutual spots distances
 			SpatialIndex<Spot> index = projectModel.getModel().getSpatioTemporalIndex().getSpatialIndex(t);
