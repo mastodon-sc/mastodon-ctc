@@ -1,11 +1,14 @@
 package org.mastodon.ctc.baseline;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
 import net.imagej.ImageJ;
+import org.mastodon.mamut.io.ProjectSaver;
 import org.scijava.Context;
 import mpicbg.spim.data.SpimDataException;
 import net.imglib2.Cursor;
@@ -208,11 +211,12 @@ public class AutonomousFullTracker {
 	}
 
 	public static void main(String[] args, final Context ctx) {
-		if (args.length != 3) {
+		if (args.length != 3 && args.length != 4) {
 				System.out.println("Need three params in the following order:");
-				System.out.println("  path/project.mastodon or path/folderName");
+				System.out.println("  FULL_path/project.mastodon or path/folderName");
 				System.out.println("  first_time_point_to_track");
 				System.out.println("  last_time_point_to_track");
+				System.out.println("  [optional: FULL_path/save_result_into_this_project.mastodon]");
 				return;
 		}
 
@@ -223,6 +227,7 @@ public class AutonomousFullTracker {
 		try {
 			if (args[0].endsWith(".mastodon")) {
 				//real project
+				System.out.println("Starting with mastodon project: "+args[0]);
 				projectModel = ProjectLoader.open(args[0], ctx);
 				imgProvider = new ImgProviders.ImgProviderFromMastodon(
 						projectModel.getSharedBdvData().getSources().get(1).getSpimSource(),
@@ -253,6 +258,15 @@ public class AutonomousFullTracker {
 			projectModel.getWindowManager().createView(MamutViewBdv.class)
 					.getGroupHandle().setGroupId(0);
 */
+			if (args.length == 4) {
+				Path path = Paths.get(args[3]);
+				if (!path.isAbsolute()) path = path.toAbsolutePath();
+				System.out.println("Saving tracked mastodon project: "+path);
+				ProjectSaver.saveProject(path.toFile(), projectModel);
+			} else {
+				System.out.println("NOT saving tracked mastodon project");
+			}
+
 			ctx.dispose();
 			System.exit(0);
 		} catch (SpimDataException | IOException e) {

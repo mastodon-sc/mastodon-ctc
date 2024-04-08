@@ -17,8 +17,14 @@ public class AutonomousFullTrackerPlugin implements Command {
 	@Parameter
 	int till;
 
+	@Parameter(required = false)
+	String savepath = null;
+
 	@Override
 	public void run() {
-		AutonomousFullTracker.main(new String[]{path,String.valueOf(from),String.valueOf(till)}, ctx);
+		if (savepath == null || savepath.isEmpty() || savepath.startsWith("no"))
+			AutonomousFullTracker.main(new String[]{path,String.valueOf(from),String.valueOf(till)}, ctx);
+		else
+			AutonomousFullTracker.main(new String[]{path,String.valueOf(from),String.valueOf(till), savepath}, ctx);
 	}
 }
