@@ -179,6 +179,12 @@ public class AutonomousFullTracker {
 		if (distance == 0) {
 			//"emergency break" in case no "distance under the threshold" is found
 			distance = 0.5 * (maxDistance + maxModeDistance);
+
+			//yet another "emergency break" for single-cell images
+			if (distance == 0) {
+				distance = 1000;
+				System.out.println("SINGLE CELL IMAGE?? using ad-host distance "+distance);
+			}
 		}
 		System.out.println("mode cnt = "+maxModeCnt+" @ dist = "+maxModeDistance+", cntThres = "+cntThres+" => distance = "+distance);
 
