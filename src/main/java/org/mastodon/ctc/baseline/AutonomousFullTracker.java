@@ -59,9 +59,9 @@ public class AutonomousFullTracker {
 		linkerSettings.put( KEY_LINKING_MAX_DISTANCE, maxSearchDist );
 		linkerSettings.put( KEY_ALLOW_GAP_CLOSING, true );
 		linkerSettings.put( KEY_GAP_CLOSING_MAX_FRAME_GAP, 2 );
-		linkerSettings.put( KEY_GAP_CLOSING_MAX_DISTANCE, 1.3 * maxSearchDist );
+		linkerSettings.put( KEY_GAP_CLOSING_MAX_DISTANCE, 2.0 * maxSearchDist );
 		linkerSettings.put( KEY_ALLOW_TRACK_SPLITTING, true );
-		linkerSettings.put( KEY_SPLITTING_MAX_DISTANCE, 0.7 * maxSearchDist );
+		linkerSettings.put( KEY_SPLITTING_MAX_DISTANCE, 1.5 * maxSearchDist );
 		//
 		final Settings settings = new Settings()
 				.linker( linker )
@@ -187,6 +187,10 @@ public class AutonomousFullTracker {
 			}
 		}
 		System.out.println("mode cnt = "+maxModeCnt+" @ dist = "+maxModeDistance+", cntThres = "+cntThres+" => distance = "+distance);
+
+		//since this is distance between cell centres (theoretically), we half it...
+		//(to define how far two single cell centres are expected to travel until they crosses)
+		distance /= 2.0;
 
 		graph.releaseRef(spot);
 		return distance;
