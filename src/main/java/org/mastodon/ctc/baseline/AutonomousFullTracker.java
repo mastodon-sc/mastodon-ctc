@@ -5,8 +5,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import mpicbg.spim.data.SpimDataException;
 import net.imagej.ImageJ;
+import org.scijava.Context;
+import mpicbg.spim.data.SpimDataException;
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.IntegerType;
@@ -28,7 +29,6 @@ import org.mastodon.tracking.mamut.trackmate.Settings;
 import org.mastodon.tracking.mamut.trackmate.TrackMate;
 import org.mastodon.ctc.util.ImgProviders;
 import org.mastodon.mamut.ProjectModel;
-import org.mastodon.views.bdv.BigDataViewerMamut;
 import org.mastodon.views.bdv.SharedBigDataViewerData;
 
 import static org.mastodon.tracking.detection.DetectorKeys.KEY_MAX_TIMEPOINT;
@@ -174,6 +174,13 @@ public class AutonomousFullTracker {
 	}
 
 	public static void main(String[] args) {
+		ImageJ ij = new ImageJ();
+		ij.ui().showUI();
+		final Context ctx = ij.context();
+		main(args,ctx);
+	}
+
+	public static void main(String[] args, final Context ctx) {
 		if (args.length != 3) {
 				System.out.println("Need three params in the following order:");
 				System.out.println("  path/project.mastodon or path/folderName");
@@ -182,9 +189,6 @@ public class AutonomousFullTracker {
 				return;
 		}
 
-		//for the right context...
-		final ImageJ ij = new ImageJ();
-
 		final int timeFrom = Integer.valueOf(args[1]);
 		final int timeTill = Integer.valueOf(args[2]);
 		ProjectModel projectModel;
@@ -192,7 +196,7 @@ public class AutonomousFullTracker {
 		try {
 			if (args[0].endsWith(".mastodon")) {
 				//real project
-				projectModel = ProjectLoader.open(args[0], ij.context());
+				projectModel = ProjectLoader.open(args[0], ctx);
 				imgProvider = new ImgProviders.ImgProviderFromMastodon(
 						projectModel.getSharedBdvData().getSources().get(1).getSpimSource(),
 						timeFrom );
@@ -201,7 +205,7 @@ public class AutonomousFullTracker {
 				//TODO; make the dummy dataset size from the first real input image
 				final String DUMMYXML="DUMMY x=100 y=100 z=100 t="+(timeTill+1)+".dummy";
 				projectModel = ProjectModel.create(
-						ij.getContext(),
+						ctx,
 						new Model(),
 						SharedBigDataViewerData.fromDummyFilename(DUMMYXML),
 						new MamutProject("ontheflyCTCproject.mastodon") );
