@@ -81,6 +81,32 @@ public class AutonomousFullTracker {
 	}
 
 
+	static void updateMinMax(final double[] statVector, final double[] pos) {
+		if (statVector[3] == 0) {
+			//first update of the stats...
+			//x
+			statVector[4] = pos[0];
+			statVector[7] = pos[0];
+			//y
+			statVector[5] = pos[1];
+			statVector[8] = pos[1];
+			//z
+			statVector[6] = pos[2];
+			statVector[9] = pos[2];
+			return;
+		}
+
+		//x
+		statVector[4] = Math.min(statVector[4],pos[0]);
+		statVector[7] = Math.max(statVector[7],pos[0]);
+		//y
+		statVector[5] = Math.min(statVector[5],pos[1]);
+		statVector[8] = Math.max(statVector[8],pos[1]);
+		//z
+		statVector[6] = Math.min(statVector[6],pos[2]);
+		statVector[9] = Math.max(statVector[9],pos[2]);
+	}
+
 	static <T extends IntegerType<T>>
 	void findAndSetSpots(final RandomAccessibleInterval<T> img,
 	                     final double[] pxSizes,
@@ -99,6 +125,7 @@ public class AutonomousFullTracker {
 			if (label > 0) {
 				double[] stat = geomStats.computeIfAbsent(label, k -> new double[10]); //3+1+3+3
 				c.localize(pos);
+				updateMinMax(stat,pos);       //update the image coords!
 				stat[0] += pos[0]*pxSizes[0]; //transform from image coords to Mastodon coords
 				stat[1] += pos[1]*pxSizes[1];
 				stat[2] += pos[2]*pxSizes[2];
