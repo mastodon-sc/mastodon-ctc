@@ -134,11 +134,16 @@ public class AutonomousFullTracker {
 		}
 
 		//finish the stats and create spots
-		for (double[] stat : geomStats.values()) {
+		for (int geomLabel : geomStats.keySet()) {
+			double[] stat = geomStats.get(geomLabel);
 			pos[0] = stat[0] / stat[3];
 			pos[1] = stat[1] / stat[3];
 			pos[2] = stat[2] / stat[3];
 			graph.addVertex(auxSpot).init(time,pos,3);
+			auxSpot.setLabel("L "+geomLabel+" minBox "
+					+ stat[4] + " " + stat[5] + " " + stat[6]
+					+ " maxBox "
+					+ stat[7] + " " + stat[8] + " " + stat[9]);
 		}
 		System.out.println("TP "+time+" found "+geomStats.size()+" spots");
 	}
