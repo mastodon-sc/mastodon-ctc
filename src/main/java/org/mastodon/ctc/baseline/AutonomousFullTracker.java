@@ -97,9 +97,9 @@ public class AutonomousFullTracker {
 		while (c.hasNext()) {
 			label = c.next().getInteger();
 			if (label > 0) {
-				double[] stat = geomStats.computeIfAbsent(label, k -> new double[4]);
+				double[] stat = geomStats.computeIfAbsent(label, k -> new double[10]); //3+1+3+3
 				c.localize(pos);
-				stat[0] += pos[0]*pxSizes[0];
+				stat[0] += pos[0]*pxSizes[0]; //transform from image coords to Mastodon coords
 				stat[1] += pos[1]*pxSizes[1];
 				stat[2] += pos[2]*pxSizes[2];
 				stat[3] += 1;
