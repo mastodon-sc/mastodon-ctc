@@ -8,6 +8,9 @@ import java.util.Iterator;
 import java.util.Map;
 
 import net.imagej.ImageJ;
+import net.imglib2.FinalInterval;
+import net.imglib2.Interval;
+import net.imglib2.loops.LoopBuilder;
 import org.mastodon.mamut.io.ProjectSaver;
 import org.scijava.Context;
 import mpicbg.spim.data.SpimDataException;
@@ -146,6 +149,30 @@ public class AutonomousFullTracker {
 					+ stat[7] + " " + stat[8] + " " + stat[9]);
 		}
 		System.out.println("TP "+time+" found "+geomStats.size()+" spots");
+	}
+
+	static <T extends IntegerType<T>>
+	void fillSpots(final RandomAccessibleInterval<T> outImg,
+	               final RandomAccessibleInterval<T> labelImg,
+	               final SpatialIndex<Spot> spots) {
+
+		long[] minCorner = new long[3];
+		long[] maxCorner = new long[3];
+		for (Spot s : spots) {
+			String[] items = s.getLabel().split(" ");
+			int inputLabel = Integer.valueOf(items[1]);
+			minCorner[0] = Long.valueOf(items[3]);
+			minCorner[1] = Long.valueOf(items[5]);
+			minCorner[2] = Long.valueOf(items[7]);
+			maxCorner[0] = Long.valueOf(items[9]);
+			maxCorner[1] = Long.valueOf(items[11]);
+			maxCorner[2] = Long.valueOf(items[13]);
+			Interval roi = new FinalInterval(minCorner,maxCorner);
+			LoopBuilder.setImages( Views.interval(outImg,roi),Views.interval(labelImg,roi) )
+					  .forEachPixel((o,l) -> {
+						  if (l.getInteger() == inputLabel) o.setInteger(1); //TODO what's the output value??
+					  });
+		}
 	}
 
 
