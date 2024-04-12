@@ -157,9 +157,9 @@ public class AutonomousFullTracker {
 			pos[2] = stat[2] / stat[3];
 			graph.addVertex(auxSpot).init(time,pos,3);
 			auxSpot.setLabel("L "+geomLabel+" minBox "
-					+ stat[4] + " " + stat[5] + " " + stat[6]
+					+ (int)stat[4] + " " + (int)stat[5] + " " + (int)stat[6]
 					+ " maxBox "
-					+ stat[7] + " " + stat[8] + " " + stat[9]);
+					+ (int)stat[7] + " " + (int)stat[8] + " " + (int)stat[9]);
 		}
 		System.out.println("TP "+time+" found "+geomStats.size()+" spots");
 	}
