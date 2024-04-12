@@ -11,7 +11,10 @@ import net.imagej.ImageJ;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.loops.LoopBuilder;
+import org.mastodon.collection.RefSet;
+import org.mastodon.collection.ref.RefSetImp;
 import org.mastodon.mamut.io.ProjectSaver;
+import org.mastodon.util.DepthFirstIteration;
 import org.scijava.Context;
 import mpicbg.spim.data.SpimDataException;
 import net.imglib2.Cursor;
@@ -270,11 +273,44 @@ public class AutonomousFullTracker {
 		System.out.println("Histogram listing ended above...");
 	}
 
+
 	static public void clearGraph(final ProjectModel projectModel) {
 		Iterator<Spot> it = projectModel.getModel().getSpatioTemporalIndex().iterator();
 		final ModelGraph graph = projectModel.getModel().getGraph();
 		while (it.hasNext()) graph.remove( it.next() );
 	}
+
+
+	static public void establishAndNoteTracks(final ProjectModel projectModel) {
+		final ModelGraph graph = projectModel.getModel().getGraph();
+
+		RefSet<Spot> roots = new RefSetImp<>(graph.vertices().getRefPool(),100);
+		//TODO: parallelStream? is roots::add thread-safe?
+		graph.vertices().stream().filter(s -> s.incomingEdges().isEmpty()).forEach(roots::add);
+
+		int trackID = 1;
+		for (Spot root : roots) {
+			System.out.println("Using trackID "+trackID+" from root "+root.getLabel()+" @ tp "+root.getTimepoint());
+			for (DepthFirstIteration.Step<Spot> step : DepthFirstIteration.forRoot(graph,root)) {
+				final Spot spot = step.node();
+				if (step.isFirstVisit() || step.isLeaf()) {
+					//label only once
+					spot.setLabel(spot.getLabel()+" Track "+trackID);
+
+					if (spot.outgoingEdges().size() > 1 || step.isLeaf()) {
+						//division point? -> increase trackID (to be used immediately in the current down-the-tree pass)
+						//NB: every division point is visited only once on the down-the-tree pass,
+						//    but the traversal returns directly under some division point on its
+						//    up-the-tree pass, which starts after "turning itself" at the leaves,
+						//thus, leaf? -> increase trackID (to be used again on the down-the-three pass)
+						++trackID;
+						System.out.println("Increase trackID to "+trackID+" at spot "+spot.getLabel()+" @ tp "+spot.getTimepoint());
+					}
+				}
+			}
+		}
+	}
+
 
 	public static void main(String[] args) {
 		ImageJ ij = new ImageJ();
@@ -323,6 +359,7 @@ public class AutonomousFullTracker {
 			clearGraph(projectModel);
 			double distance = detect(projectModel,imgProvider, timeFrom,timeTill);
 			link(projectModel, distance, timeFrom,timeTill);
+			establishAndNoteTracks(projectModel);
 
 /*
 			//for review for now: show trackmate and bdv windows, and link them together
