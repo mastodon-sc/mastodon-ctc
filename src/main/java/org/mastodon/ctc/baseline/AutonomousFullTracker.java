@@ -286,13 +286,13 @@ public class AutonomousFullTracker {
 		graph.vertices().stream().filter(s -> s.incomingEdges().isEmpty()).forEach(roots::add);
 
 		Map<Integer,Integer[]> tt = new HashMap<>(10000);
-		boolean tt_initTrack = false;
 
 		int trackID = 1;
 		for (Spot root : roots) {
 			Integer[] quartet = new Integer[] {trackID, root.getTimepoint(), -1, 0};
 			tt.put(trackID,quartet);
 			//System.out.println("Using trackID "+trackID+" from root "+root.getLabel()+" @ tp "+root.getTimepoint());
+			boolean tt_initTrack = false;
 
 			for (DepthFirstIteration.Step<Spot> step : DepthFirstIteration.forRoot(graph,root)) {
 				final Spot spot = step.node();
