@@ -220,19 +220,6 @@ public class AutonomousFullTracker {
 
 		print_histogram(distances);
 
-/*
-		//get "mean" from the distances histogram (that was accumulated over all time points)
-		double distance = 0;
-		long totalCnt = 0;
-		for (int dist : distances.keySet()) {
-			int cnt = distances.get(dist);
-			distance += cnt * dist;
-			totalCnt += cnt;
-		}
-		distance /= (double)totalCnt;
-		System.out.println("Mean distance between the spots: "+distance);
-		//distance /= 1.5; //4.0;
-*/
 		//find "max mode" distance in the histogram, and then when it decays to 1/10 on the right...
 		int maxModeDistance = 0;
 		int maxModeCnt = -1;
