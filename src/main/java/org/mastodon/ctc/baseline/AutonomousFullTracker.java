@@ -93,7 +93,7 @@ public class AutonomousFullTracker {
 			return;
 		}
 		final long end = System.currentTimeMillis();
-		System.out.println( String.format( "Tracking successful. Done in %.1f s.", ( end - start ) / 1000. ) );
+		System.out.printf("Tracking successful. Done in %.1f s.%n", ( end - start ) / 1000. );
 	}
 
 
@@ -315,7 +315,7 @@ public class AutonomousFullTracker {
 					//label only once
 					spot.setLabel(spot.getLabel()+" Track "+trackID);
 					if (tt_initTrack) {
-						int trackParentID = Integer.valueOf(spot.incomingEdges().get(0).getSource().getLabel().split(" ")[11]);
+						int trackParentID = Integer.parseInt(spot.incomingEdges().get(0).getSource().getLabel().split(" ")[11]);
 						quartet = new Integer[] {trackID, spot.getTimepoint(), -1, trackParentID};
 						tt.put(trackID,quartet);
 						tt_initTrack = false;
@@ -359,8 +359,8 @@ public class AutonomousFullTracker {
 				return;
 		}
 
-		final int timeFrom = Integer.valueOf(args[1]);
-		final int timeTill = Integer.valueOf(args[2]);
+		final int timeFrom = Integer.parseInt(args[1]);
+		final int timeTill = Integer.parseInt(args[2]);
 		ProjectModel projectModel;
 		ImgProviders.ImgProvider imgProvider;
 		try {
