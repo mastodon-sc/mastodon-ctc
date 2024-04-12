@@ -307,7 +307,7 @@ public class AutonomousFullTracker {
 		for (Spot root : roots) {
 			Integer[] quartet = new Integer[] {trackID, root.getTimepoint(), -1, 0};
 			tt.put(trackID,quartet);
-			System.out.println("Using trackID "+trackID+" from root "+root.getLabel()+" @ tp "+root.getTimepoint());
+			//System.out.println("Using trackID "+trackID+" from root "+root.getLabel()+" @ tp "+root.getTimepoint());
 
 			for (DepthFirstIteration.Step<Spot> step : DepthFirstIteration.forRoot(graph,root)) {
 				final Spot spot = step.node();
@@ -330,7 +330,7 @@ public class AutonomousFullTracker {
 						//thus, leaf? -> increase trackID (to be used again on the down-the-three pass)
 						++trackID;
 						tt_initTrack = true;
-						System.out.println("Increase trackID to "+trackID+" at spot "+spot.getLabel()+" @ tp "+spot.getTimepoint());
+						//System.out.println("Increase trackID to "+trackID+" at spot "+spot.getLabel()+" @ tp "+spot.getTimepoint());
 					}
 				}
 			}
@@ -461,11 +461,11 @@ public class AutonomousFullTracker {
 			System.out.println("Relabeler TP="+time+": reading input image...");
 			RandomAccessibleInterval<?> labelImg = imageSrc.getImage(time);
 
-			System.out.println("Relabeler TP="+time+": creating output image...");
+			//System.out.println("Relabeler TP="+time+": creating output image...");
 			RandomAccessibleInterval<UnsignedShortType> outImg
 					  = new PlanarImgFactory<>(new UnsignedShortType()).create(labelImg);
 
-			System.out.println("Relabeler TP="+time+": filling output image...");
+			//System.out.println("Relabeler TP="+time+": filling output image...");
 			fillSpots(outImg, (RandomAccessibleInterval)labelImg, projectModel.getModel().getSpatioTemporalIndex().getSpatialIndex(time));
 
 			String outFileName = String.format(outFilenameTemplate,time);
