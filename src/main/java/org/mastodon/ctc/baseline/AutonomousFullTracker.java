@@ -38,8 +38,6 @@ import org.mastodon.mamut.io.project.MamutProject;
 import org.mastodon.mamut.model.Model;
 import org.mastodon.mamut.model.ModelGraph;
 import org.mastodon.mamut.model.Spot;
-import org.mastodon.mamut.views.bdv.MamutViewBdv;
-import org.mastodon.mamut.views.trackscheme.MamutViewTrackScheme;
 import org.mastodon.spatial.SpatialIndex;
 import org.mastodon.tracking.linking.LinkingUtils;
 import org.mastodon.tracking.mamut.linking.SpotLinkerOp;
@@ -377,14 +375,6 @@ public class AutonomousFullTracker {
 			double distance = detect(projectModel,imgProvider, timeFrom,timeTill);
 			link(projectModel, distance, timeFrom,timeTill);
 			Map<?,Integer[]> tt = establishAndNoteTracks(projectModel);
-
-/*
-			//for review for now: show trackmate and bdv windows, and link them together
-			projectModel.getWindowManager().createView(MamutViewTrackScheme.class)
-					.getGroupHandle().setGroupId(0);
-			projectModel.getWindowManager().createView(MamutViewBdv.class)
-					.getGroupHandle().setGroupId(0);
-*/
 
 			if (args.length == 4) {
 				Path path = Paths.get(args[3]);
