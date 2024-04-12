@@ -281,34 +281,51 @@ public class AutonomousFullTracker {
 	}
 
 
-	static public void establishAndNoteTracks(final ProjectModel projectModel) {
+	/** returns a map with the CTC tracks.txt quartets */
+	static public Map<Integer,Integer[]> establishAndNoteTracks(final ProjectModel projectModel) {
 		final ModelGraph graph = projectModel.getModel().getGraph();
 
 		RefSet<Spot> roots = new RefSetImp<>(graph.vertices().getRefPool(),100);
 		//TODO: parallelStream? is roots::add thread-safe?
 		graph.vertices().stream().filter(s -> s.incomingEdges().isEmpty()).forEach(roots::add);
 
+		Map<Integer,Integer[]> tt = new HashMap<>(10000);
+		boolean tt_initTrack = false;
+
 		int trackID = 1;
 		for (Spot root : roots) {
+			Integer[] quartet = new Integer[] {trackID, root.getTimepoint(), -1, 0};
+			tt.put(trackID,quartet);
 			System.out.println("Using trackID "+trackID+" from root "+root.getLabel()+" @ tp "+root.getTimepoint());
+
 			for (DepthFirstIteration.Step<Spot> step : DepthFirstIteration.forRoot(graph,root)) {
 				final Spot spot = step.node();
 				if (step.isFirstVisit() || step.isLeaf()) {
 					//label only once
 					spot.setLabel(spot.getLabel()+" Track "+trackID);
+					if (tt_initTrack) {
+						int trackParentID = Integer.valueOf(spot.incomingEdges().get(0).getSource().getLabel().split(" ")[11]);
+						quartet = new Integer[] {trackID, spot.getTimepoint(), -1, trackParentID};
+						tt.put(trackID,quartet);
+						tt_initTrack = false;
+					}
 
 					if (spot.outgoingEdges().size() > 1 || step.isLeaf()) {
+						tt.get(trackID)[2] = spot.getTimepoint();
 						//division point? -> increase trackID (to be used immediately in the current down-the-tree pass)
 						//NB: every division point is visited only once on the down-the-tree pass,
 						//    but the traversal returns directly under some division point on its
 						//    up-the-tree pass, which starts after "turning itself" at the leaves,
 						//thus, leaf? -> increase trackID (to be used again on the down-the-three pass)
 						++trackID;
+						tt_initTrack = true;
 						System.out.println("Increase trackID to "+trackID+" at spot "+spot.getLabel()+" @ tp "+spot.getTimepoint());
 					}
 				}
 			}
 		}
+
+		return tt;
 	}
 
 
