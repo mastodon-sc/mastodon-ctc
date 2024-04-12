@@ -8,7 +8,13 @@ import java.util.Iterator;
 import java.util.Map;
 
 import net.imagej.ImageJ;
+import net.imglib2.FinalInterval;
+import net.imglib2.Interval;
+import net.imglib2.loops.LoopBuilder;
+import org.mastodon.collection.RefSet;
+import org.mastodon.collection.ref.RefSetImp;
 import org.mastodon.mamut.io.ProjectSaver;
+import org.mastodon.util.DepthFirstIteration;
 import org.scijava.Context;
 import mpicbg.spim.data.SpimDataException;
 import net.imglib2.Cursor;
@@ -81,6 +87,32 @@ public class AutonomousFullTracker {
 	}
 
 
+	static void updateMinMax(final double[] statVector, final double[] pos) {
+		if (statVector[3] == 0) {
+			//first update of the stats...
+			//x
+			statVector[4] = pos[0];
+			statVector[7] = pos[0];
+			//y
+			statVector[5] = pos[1];
+			statVector[8] = pos[1];
+			//z
+			statVector[6] = pos[2];
+			statVector[9] = pos[2];
+			return;
+		}
+
+		//x
+		statVector[4] = Math.min(statVector[4],pos[0]);
+		statVector[7] = Math.max(statVector[7],pos[0]);
+		//y
+		statVector[5] = Math.min(statVector[5],pos[1]);
+		statVector[8] = Math.max(statVector[8],pos[1]);
+		//z
+		statVector[6] = Math.min(statVector[6],pos[2]);
+		statVector[9] = Math.max(statVector[9],pos[2]);
+	}
+
 	static <T extends IntegerType<T>>
 	void findAndSetSpots(final RandomAccessibleInterval<T> img,
 	                     final double[] pxSizes,
@@ -97,9 +129,10 @@ public class AutonomousFullTracker {
 		while (c.hasNext()) {
 			label = c.next().getInteger();
 			if (label > 0) {
-				double[] stat = geomStats.computeIfAbsent(label, k -> new double[4]);
+				double[] stat = geomStats.computeIfAbsent(label, k -> new double[10]); //3+1+3+3
 				c.localize(pos);
-				stat[0] += pos[0]*pxSizes[0];
+				updateMinMax(stat,pos);       //update the image coords!
+				stat[0] += pos[0]*pxSizes[0]; //transform from image coords to Mastodon coords
 				stat[1] += pos[1]*pxSizes[1];
 				stat[2] += pos[2]*pxSizes[2];
 				stat[3] += 1;
@@ -107,13 +140,42 @@ public class AutonomousFullTracker {
 		}
 
 		//finish the stats and create spots
-		for (double[] stat : geomStats.values()) {
+		for (int geomLabel : geomStats.keySet()) {
+			double[] stat = geomStats.get(geomLabel);
 			pos[0] = stat[0] / stat[3];
 			pos[1] = stat[1] / stat[3];
 			pos[2] = stat[2] / stat[3];
 			graph.addVertex(auxSpot).init(time,pos,3);
+			auxSpot.setLabel("L "+geomLabel+" minBox "
+					+ stat[4] + " " + stat[5] + " " + stat[6]
+					+ " maxBox "
+					+ stat[7] + " " + stat[8] + " " + stat[9]);
 		}
 		System.out.println("TP "+time+" found "+geomStats.size()+" spots");
+	}
+
+	static <T extends IntegerType<T>>
+	void fillSpots(final RandomAccessibleInterval<T> outImg,
+	               final RandomAccessibleInterval<T> labelImg,
+	               final SpatialIndex<Spot> spots) {
+
+		long[] minCorner = new long[3];
+		long[] maxCorner = new long[3];
+		for (Spot s : spots) {
+			String[] items = s.getLabel().split(" ");
+			int inputLabel = Integer.valueOf(items[1]);
+			minCorner[0] = Long.valueOf(items[3]);
+			minCorner[1] = Long.valueOf(items[5]);
+			minCorner[2] = Long.valueOf(items[7]);
+			maxCorner[0] = Long.valueOf(items[9]);
+			maxCorner[1] = Long.valueOf(items[11]);
+			maxCorner[2] = Long.valueOf(items[13]);
+			Interval roi = new FinalInterval(minCorner,maxCorner);
+			LoopBuilder.setImages( Views.interval(outImg,roi),Views.interval(labelImg,roi) )
+					  .forEachPixel((o,l) -> {
+						  if (l.getInteger() == inputLabel) o.setInteger(1); //TODO what's the output value??
+					  });
+		}
 	}
 
 
@@ -211,11 +273,61 @@ public class AutonomousFullTracker {
 		System.out.println("Histogram listing ended above...");
 	}
 
+
 	static public void clearGraph(final ProjectModel projectModel) {
 		Iterator<Spot> it = projectModel.getModel().getSpatioTemporalIndex().iterator();
 		final ModelGraph graph = projectModel.getModel().getGraph();
 		while (it.hasNext()) graph.remove( it.next() );
 	}
+
+
+	/** returns a map with the CTC tracks.txt quartets */
+	static public Map<Integer,Integer[]> establishAndNoteTracks(final ProjectModel projectModel) {
+		final ModelGraph graph = projectModel.getModel().getGraph();
+
+		RefSet<Spot> roots = new RefSetImp<>(graph.vertices().getRefPool(),100);
+		//TODO: parallelStream? is roots::add thread-safe?
+		graph.vertices().stream().filter(s -> s.incomingEdges().isEmpty()).forEach(roots::add);
+
+		Map<Integer,Integer[]> tt = new HashMap<>(10000);
+		boolean tt_initTrack = false;
+
+		int trackID = 1;
+		for (Spot root : roots) {
+			Integer[] quartet = new Integer[] {trackID, root.getTimepoint(), -1, 0};
+			tt.put(trackID,quartet);
+			System.out.println("Using trackID "+trackID+" from root "+root.getLabel()+" @ tp "+root.getTimepoint());
+
+			for (DepthFirstIteration.Step<Spot> step : DepthFirstIteration.forRoot(graph,root)) {
+				final Spot spot = step.node();
+				if (step.isFirstVisit() || step.isLeaf()) {
+					//label only once
+					spot.setLabel(spot.getLabel()+" Track "+trackID);
+					if (tt_initTrack) {
+						int trackParentID = Integer.valueOf(spot.incomingEdges().get(0).getSource().getLabel().split(" ")[11]);
+						quartet = new Integer[] {trackID, spot.getTimepoint(), -1, trackParentID};
+						tt.put(trackID,quartet);
+						tt_initTrack = false;
+					}
+
+					if (spot.outgoingEdges().size() > 1 || step.isLeaf()) {
+						tt.get(trackID)[2] = spot.getTimepoint();
+						//division point? -> increase trackID (to be used immediately in the current down-the-tree pass)
+						//NB: every division point is visited only once on the down-the-tree pass,
+						//    but the traversal returns directly under some division point on its
+						//    up-the-tree pass, which starts after "turning itself" at the leaves,
+						//thus, leaf? -> increase trackID (to be used again on the down-the-three pass)
+						++trackID;
+						tt_initTrack = true;
+						System.out.println("Increase trackID to "+trackID+" at spot "+spot.getLabel()+" @ tp "+spot.getTimepoint());
+					}
+				}
+			}
+		}
+
+		return tt;
+	}
+
 
 	public static void main(String[] args) {
 		ImageJ ij = new ImageJ();
@@ -264,6 +376,11 @@ public class AutonomousFullTracker {
 			clearGraph(projectModel);
 			double distance = detect(projectModel,imgProvider, timeFrom,timeTill);
 			link(projectModel, distance, timeFrom,timeTill);
+			Map<?,Integer[]> tt = establishAndNoteTracks(projectModel);
+
+			//print CTC tracks
+			for (Integer[] t : tt.values())
+				System.out.println("TRACKS.TXT: "+t[0]+" "+t[1]+" "+t[2]+" "+t[3]);
 
 /*
 			//for review for now: show trackmate and bdv windows, and link them together
