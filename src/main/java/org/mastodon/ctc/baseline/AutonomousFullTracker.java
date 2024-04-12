@@ -1,5 +1,7 @@
 package org.mastodon.ctc.baseline;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -381,10 +383,6 @@ public class AutonomousFullTracker {
 			link(projectModel, distance, timeFrom,timeTill);
 			Map<?,Integer[]> tt = establishAndNoteTracks(projectModel);
 
-			//print CTC tracks
-			for (Integer[] t : tt.values())
-				System.out.println("TRACKS.TXT: "+t[0]+" "+t[1]+" "+t[2]+" "+t[3]);
-
 /*
 			//for review for now: show trackmate and bdv windows, and link them together
 			projectModel.getWindowManager().createView(MamutViewTrackScheme.class)
@@ -392,12 +390,26 @@ public class AutonomousFullTracker {
 			projectModel.getWindowManager().createView(MamutViewBdv.class)
 					.getGroupHandle().setGroupId(0);
 */
+
 			if (args.length == 4) {
+				Path path = Paths.get(args[3]);
+				if (!path.isAbsolute()) path = path.toAbsolutePath();
+				//
 				if (args[3].endsWith(".mastodon")) {
-					Path path = Paths.get(args[3]);
-					if (!path.isAbsolute()) path = path.toAbsolutePath();
 					System.out.println("Saving tracked mastodon project: "+path);
 					ProjectSaver.saveProject(path.toFile(), projectModel);
+				} else {
+					//da plan: iterate all TPs.for each( read, all spots relabel, write ) using threads
+					final String resFile= Paths
+							  .get( path.getParent().toString(), "res_tracks.txt" )
+							  .toString();
+					System.out.println("Writing file "+resFile);
+					try ( BufferedWriter bw = new BufferedWriter(new FileWriter(resFile)) ) {
+						for (Integer[] t : tt.values()) {
+							bw.write(t[0] + " " + t[1] + " " + t[2] + " " + t[3]);
+							bw.newLine();
+						}
+					}
 				}
 			} else {
 				System.out.println("NOT saving the tracked project");
