@@ -154,26 +154,27 @@ public class AutonomousFullTracker {
 		System.out.println("TP "+time+" found "+geomStats.size()+" spots");
 	}
 
-	static <T extends IntegerType<T>>
-	void fillSpots(final RandomAccessibleInterval<T> outImg,
-	               final RandomAccessibleInterval<T> labelImg,
+	static <O extends IntegerType<O>, L extends IntegerType<L>>
+	void fillSpots(final RandomAccessibleInterval<O> outImg,
+	               final RandomAccessibleInterval<L> labelImg,
 	               final SpatialIndex<Spot> spots) {
 
 		long[] minCorner = new long[3];
 		long[] maxCorner = new long[3];
 		for (Spot s : spots) {
 			String[] items = s.getLabel().split(" ");
-			int inputLabel = Integer.valueOf(items[1]);
-			minCorner[0] = Long.valueOf(items[3]);
-			minCorner[1] = Long.valueOf(items[5]);
-			minCorner[2] = Long.valueOf(items[7]);
-			maxCorner[0] = Long.valueOf(items[9]);
-			maxCorner[1] = Long.valueOf(items[11]);
-			maxCorner[2] = Long.valueOf(items[13]);
+			int inputLabel = Integer.parseInt(items[1]);
+			int outputLabel = Integer.parseInt(items[11]);
+			minCorner[0] = Long.parseLong(items[3]);
+			minCorner[1] = Long.parseLong(items[4]);
+			minCorner[2] = Long.parseLong(items[5]);
+			maxCorner[0] = Long.parseLong(items[7]);
+			maxCorner[1] = Long.parseLong(items[8]);
+			maxCorner[2] = Long.parseLong(items[9]);
 			Interval roi = new FinalInterval(minCorner,maxCorner);
 			LoopBuilder.setImages( Views.interval(outImg,roi),Views.interval(labelImg,roi) )
 					  .forEachPixel((o,l) -> {
-						  if (l.getInteger() == inputLabel) o.setInteger(1); //TODO what's the output value??
+						  if (l.getInteger() == inputLabel) o.setInteger(outputLabel);
 					  });
 		}
 	}
