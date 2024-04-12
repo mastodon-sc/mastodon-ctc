@@ -358,17 +358,20 @@ public class AutonomousFullTracker {
 						timeFrom );
 				System.out.println(args[0]+" time span is "+timeFrom+" - "+timeTill);
 			} else {
-				//DUMMY dataset
-				//TODO; make the dummy dataset size from the first real input image
-				final String DUMMYXML="DUMMY x=100 y=100 z=100 t="+(timeTill+1)+".dummy";
+				imgProvider = new ImgProviders.ImgProviderFromDisk(
+						  args[0],
+						  timeFrom );
+				//dummy dataset, of the same size as the first real input image
+				RandomAccessibleInterval<?> img = imgProvider.getImage(timeFrom); //NB: will not read TP = timeFrom again
+				final long xSize = img.dimension(0);
+				final long ySize = img.dimension(1);
+				final long zSize = img.numDimensions() > 2 ? img.dimension(2) : 1L;
+				final String DUMMYXML="DUMMY x="+xSize+" y="+ySize+" z="+zSize+" t="+(timeTill+1)+".dummy";
 				projectModel = ProjectModel.create(
 						ctx,
 						new Model(),
 						SharedBigDataViewerData.fromDummyFilename(DUMMYXML),
 						new MamutProject("ontheflyCTCproject.mastodon") );
-				imgProvider = new ImgProviders.ImgProviderFromDisk(
-						args[0],
-						timeFrom );
 			}
 
 			clearGraph(projectModel);
