@@ -344,6 +344,8 @@ public class AutonomousFullTracker {
 				System.out.println("  first_time_point_to_track");
 				System.out.println("  last_time_point_to_track");
 				System.out.println("  [optional: FULL_path/save_result_into_this_project.mastodon]");
+				System.out.println("  [      or: output_path/filenameTemplate.tif, which would]");
+				System.out.println("  [          also create output_path/res_tracks.txt]");
 				return;
 		}
 
@@ -391,12 +393,14 @@ public class AutonomousFullTracker {
 					.getGroupHandle().setGroupId(0);
 */
 			if (args.length == 4) {
-				Path path = Paths.get(args[3]);
-				if (!path.isAbsolute()) path = path.toAbsolutePath();
-				System.out.println("Saving tracked mastodon project: "+path);
-				ProjectSaver.saveProject(path.toFile(), projectModel);
+				if (args[3].endsWith(".mastodon")) {
+					Path path = Paths.get(args[3]);
+					if (!path.isAbsolute()) path = path.toAbsolutePath();
+					System.out.println("Saving tracked mastodon project: "+path);
+					ProjectSaver.saveProject(path.toFile(), projectModel);
+				}
 			} else {
-				System.out.println("NOT saving tracked mastodon project");
+				System.out.println("NOT saving the tracked project");
 			}
 
 			ctx.dispose();
