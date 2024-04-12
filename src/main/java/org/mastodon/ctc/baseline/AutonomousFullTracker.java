@@ -1,16 +1,26 @@
 package org.mastodon.ctc.baseline;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
+import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Collection;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
 
+import ij.IJ;
 import net.imagej.ImageJ;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
+import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.loops.LoopBuilder;
+import net.imglib2.img.planar.PlanarImgFactory;
+import net.imglib2.type.numeric.integer.UnsignedShortType;
 import org.mastodon.collection.RefSet;
 import org.mastodon.collection.ref.RefSetImp;
 import org.mastodon.mamut.io.ProjectSaver;
@@ -83,7 +93,7 @@ public class AutonomousFullTracker {
 			return;
 		}
 		final long end = System.currentTimeMillis();
-		System.out.println( String.format( "Tracking successful. Done in %.1f s.", ( end - start ) / 1000. ) );
+		System.out.printf("Tracking successful. Done in %.1f s.%n", ( end - start ) / 1000. );
 	}
 
 
@@ -147,33 +157,34 @@ public class AutonomousFullTracker {
 			pos[2] = stat[2] / stat[3];
 			graph.addVertex(auxSpot).init(time,pos,3);
 			auxSpot.setLabel("L "+geomLabel+" minBox "
-					+ stat[4] + " " + stat[5] + " " + stat[6]
+					+ (int)stat[4] + " " + (int)stat[5] + " " + (int)stat[6]
 					+ " maxBox "
-					+ stat[7] + " " + stat[8] + " " + stat[9]);
+					+ (int)stat[7] + " " + (int)stat[8] + " " + (int)stat[9]);
 		}
 		System.out.println("TP "+time+" found "+geomStats.size()+" spots");
 	}
 
-	static <T extends IntegerType<T>>
-	void fillSpots(final RandomAccessibleInterval<T> outImg,
-	               final RandomAccessibleInterval<T> labelImg,
+	static <O extends IntegerType<O>, L extends IntegerType<L>>
+	void fillSpots(final RandomAccessibleInterval<O> outImg,
+	               final RandomAccessibleInterval<L> labelImg,
 	               final SpatialIndex<Spot> spots) {
 
 		long[] minCorner = new long[3];
 		long[] maxCorner = new long[3];
 		for (Spot s : spots) {
 			String[] items = s.getLabel().split(" ");
-			int inputLabel = Integer.valueOf(items[1]);
-			minCorner[0] = Long.valueOf(items[3]);
-			minCorner[1] = Long.valueOf(items[5]);
-			minCorner[2] = Long.valueOf(items[7]);
-			maxCorner[0] = Long.valueOf(items[9]);
-			maxCorner[1] = Long.valueOf(items[11]);
-			maxCorner[2] = Long.valueOf(items[13]);
+			int inputLabel = Integer.parseInt(items[1]);
+			int outputLabel = Integer.parseInt(items[11]);
+			minCorner[0] = Long.parseLong(items[3]);
+			minCorner[1] = Long.parseLong(items[4]);
+			minCorner[2] = Long.parseLong(items[5]);
+			maxCorner[0] = Long.parseLong(items[7]);
+			maxCorner[1] = Long.parseLong(items[8]);
+			maxCorner[2] = Long.parseLong(items[9]);
 			Interval roi = new FinalInterval(minCorner,maxCorner);
 			LoopBuilder.setImages( Views.interval(outImg,roi),Views.interval(labelImg,roi) )
 					  .forEachPixel((o,l) -> {
-						  if (l.getInteger() == inputLabel) o.setInteger(1); //TODO what's the output value??
+						  if (l.getInteger() == inputLabel) o.setInteger(outputLabel);
 					  });
 		}
 	}
@@ -296,7 +307,7 @@ public class AutonomousFullTracker {
 		for (Spot root : roots) {
 			Integer[] quartet = new Integer[] {trackID, root.getTimepoint(), -1, 0};
 			tt.put(trackID,quartet);
-			System.out.println("Using trackID "+trackID+" from root "+root.getLabel()+" @ tp "+root.getTimepoint());
+			//System.out.println("Using trackID "+trackID+" from root "+root.getLabel()+" @ tp "+root.getTimepoint());
 
 			for (DepthFirstIteration.Step<Spot> step : DepthFirstIteration.forRoot(graph,root)) {
 				final Spot spot = step.node();
@@ -304,7 +315,7 @@ public class AutonomousFullTracker {
 					//label only once
 					spot.setLabel(spot.getLabel()+" Track "+trackID);
 					if (tt_initTrack) {
-						int trackParentID = Integer.valueOf(spot.incomingEdges().get(0).getSource().getLabel().split(" ")[11]);
+						int trackParentID = Integer.parseInt(spot.incomingEdges().get(0).getSource().getLabel().split(" ")[11]);
 						quartet = new Integer[] {trackID, spot.getTimepoint(), -1, trackParentID};
 						tt.put(trackID,quartet);
 						tt_initTrack = false;
@@ -319,7 +330,7 @@ public class AutonomousFullTracker {
 						//thus, leaf? -> increase trackID (to be used again on the down-the-three pass)
 						++trackID;
 						tt_initTrack = true;
-						System.out.println("Increase trackID to "+trackID+" at spot "+spot.getLabel()+" @ tp "+spot.getTimepoint());
+						//System.out.println("Increase trackID to "+trackID+" at spot "+spot.getLabel()+" @ tp "+spot.getTimepoint());
 					}
 				}
 			}
@@ -343,11 +354,13 @@ public class AutonomousFullTracker {
 				System.out.println("  first_time_point_to_track");
 				System.out.println("  last_time_point_to_track");
 				System.out.println("  [optional: FULL_path/save_result_into_this_project.mastodon]");
+				System.out.println("  [      or: output_path/filenameTemplate.tif, which would]");
+				System.out.println("  [          also create output_path/res_tracks.txt]");
 				return;
 		}
 
-		final int timeFrom = Integer.valueOf(args[1]);
-		final int timeTill = Integer.valueOf(args[2]);
+		final int timeFrom = Integer.parseInt(args[1]);
+		final int timeTill = Integer.parseInt(args[2]);
 		ProjectModel projectModel;
 		ImgProviders.ImgProvider imgProvider;
 		try {
@@ -378,10 +391,6 @@ public class AutonomousFullTracker {
 			link(projectModel, distance, timeFrom,timeTill);
 			Map<?,Integer[]> tt = establishAndNoteTracks(projectModel);
 
-			//print CTC tracks
-			for (Integer[] t : tt.values())
-				System.out.println("TRACKS.TXT: "+t[0]+" "+t[1]+" "+t[2]+" "+t[3]);
-
 /*
 			//for review for now: show trackmate and bdv windows, and link them together
 			projectModel.getWindowManager().createView(MamutViewTrackScheme.class)
@@ -389,19 +398,81 @@ public class AutonomousFullTracker {
 			projectModel.getWindowManager().createView(MamutViewBdv.class)
 					.getGroupHandle().setGroupId(0);
 */
+
 			if (args.length == 4) {
 				Path path = Paths.get(args[3]);
 				if (!path.isAbsolute()) path = path.toAbsolutePath();
-				System.out.println("Saving tracked mastodon project: "+path);
-				ProjectSaver.saveProject(path.toFile(), projectModel);
+				//
+				if (args[3].endsWith(".mastodon")) {
+					System.out.println("Saving tracked mastodon project: "+path);
+					ProjectSaver.saveProject(path.toFile(), projectModel);
+				} else {
+					//da plan: iterate all TPs.for each( read, all spots relabel, write ) using threads
+					final String resFile= Paths
+							  .get( path.getParent().toString(), "res_tracks.txt" )
+							  .toString();
+					System.out.println("Writing file "+resFile);
+					try ( BufferedWriter bw = new BufferedWriter(new FileWriter(resFile)) ) {
+						for (Integer[] t : tt.values()) {
+							bw.write(t[0] + " " + t[1] + " " + t[2] + " " + t[3]);
+							bw.newLine();
+						}
+					}
+
+					final Collection<Callable<Integer>> tasks = new ArrayList<>(timeTill-timeFrom+1);
+					for (int time = timeFrom; time <= timeTill; ++time) {
+						tasks.add(new Relabeler(projectModel, imgProvider, args[3], time));
+					}
+					Executors.newFixedThreadPool(IO_PARALLEL_WORKERS_COUNT).invokeAll(tasks);
+				}
 			} else {
-				System.out.println("NOT saving tracked mastodon project");
+				System.out.println("NOT saving the tracked project");
 			}
 
 			ctx.dispose();
 			System.exit(0);
-		} catch (SpimDataException | IOException e) {
+		} catch (SpimDataException | IOException | InterruptedException  e) {
 			throw new RuntimeException(e);
+		}
+	}
+
+
+	static private final int IO_PARALLEL_WORKERS_COUNT = 4;
+
+	private static class Relabeler implements Callable<Integer> {
+
+		Relabeler(final ProjectModel projectModel,
+		          final ImgProviders.ImgProvider imageSrc,
+		          final String outFilenameTemplate,
+		          int forThisTimepoint) {
+			this.projectModel = projectModel;
+			this.imageSrc = imageSrc;
+			this.outFilenameTemplate = outFilenameTemplate;
+			this.time = forThisTimepoint;
+		}
+
+		private final ProjectModel projectModel;
+		private final ImgProviders.ImgProvider imageSrc;
+		private final String outFilenameTemplate;
+		private final int time;
+
+		@Override
+		public Integer call() {
+			System.out.println("Relabeler TP="+time+": reading input image...");
+			RandomAccessibleInterval<?> labelImg = imageSrc.getImage(time);
+
+			//System.out.println("Relabeler TP="+time+": creating output image...");
+			RandomAccessibleInterval<UnsignedShortType> outImg
+					  = new PlanarImgFactory<>(new UnsignedShortType()).create(labelImg);
+
+			//System.out.println("Relabeler TP="+time+": filling output image...");
+			fillSpots(outImg, (RandomAccessibleInterval)labelImg, projectModel.getModel().getSpatioTemporalIndex().getSpatialIndex(time));
+
+			String outFileName = String.format(outFilenameTemplate,time);
+			System.out.println("Relabeler TP="+time+": saving output image to "+outFileName);
+			IJ.save(ImageJFunctions.wrap(outImg, "Mastodon-CTC-export"), outFileName);
+
+			return time;
 		}
 	}
 }
