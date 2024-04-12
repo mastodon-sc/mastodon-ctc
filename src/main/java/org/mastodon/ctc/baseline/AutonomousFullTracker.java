@@ -376,7 +376,11 @@ public class AutonomousFullTracker {
 			clearGraph(projectModel);
 			double distance = detect(projectModel,imgProvider, timeFrom,timeTill);
 			link(projectModel, distance, timeFrom,timeTill);
-			establishAndNoteTracks(projectModel);
+			Map<?,Integer[]> tt = establishAndNoteTracks(projectModel);
+
+			//print CTC tracks
+			for (Integer[] t : tt.values())
+				System.out.println("TRACKS.TXT: "+t[0]+" "+t[1]+" "+t[2]+" "+t[3]);
 
 /*
 			//for review for now: show trackmate and bdv windows, and link them together
