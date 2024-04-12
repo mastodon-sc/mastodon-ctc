@@ -5,14 +5,22 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
+import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Collection;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
 
+import ij.IJ;
 import net.imagej.ImageJ;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
+import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.loops.LoopBuilder;
+import net.imglib2.img.planar.PlanarImgFactory;
+import net.imglib2.type.numeric.integer.UnsignedShortType;
 import org.mastodon.collection.RefSet;
 import org.mastodon.collection.ref.RefSetImp;
 import org.mastodon.mamut.io.ProjectSaver;
@@ -410,6 +418,12 @@ public class AutonomousFullTracker {
 							bw.newLine();
 						}
 					}
+
+					final Collection<Callable<Integer>> tasks = new ArrayList<>(timeTill-timeFrom+1);
+					for (int time = timeFrom; time <= timeTill; ++time) {
+						tasks.add(new Relabeler(projectModel, imgProvider, args[3], time));
+					}
+					Executors.newFixedThreadPool(IO_PARALLEL_WORKERS_COUNT).invokeAll(tasks);
 				}
 			} else {
 				System.out.println("NOT saving the tracked project");
@@ -417,8 +431,48 @@ public class AutonomousFullTracker {
 
 			ctx.dispose();
 			System.exit(0);
-		} catch (SpimDataException | IOException e) {
+		} catch (SpimDataException | IOException | InterruptedException  e) {
 			throw new RuntimeException(e);
+		}
+	}
+
+
+	static private final int IO_PARALLEL_WORKERS_COUNT = 4;
+
+	private static class Relabeler implements Callable<Integer> {
+
+		Relabeler(final ProjectModel projectModel,
+		          final ImgProviders.ImgProvider imageSrc,
+		          final String outFilenameTemplate,
+		          int forThisTimepoint) {
+			this.projectModel = projectModel;
+			this.imageSrc = imageSrc;
+			this.outFilenameTemplate = outFilenameTemplate;
+			this.time = forThisTimepoint;
+		}
+
+		private final ProjectModel projectModel;
+		private final ImgProviders.ImgProvider imageSrc;
+		private final String outFilenameTemplate;
+		private final int time;
+
+		@Override
+		public Integer call() {
+			System.out.println("Relabeler TP="+time+": reading input image...");
+			RandomAccessibleInterval<?> labelImg = imageSrc.getImage(time);
+
+			System.out.println("Relabeler TP="+time+": creating output image...");
+			RandomAccessibleInterval<UnsignedShortType> outImg
+					  = new PlanarImgFactory<>(new UnsignedShortType()).create(labelImg);
+
+			System.out.println("Relabeler TP="+time+": filling output image...");
+			fillSpots(outImg, (RandomAccessibleInterval)labelImg, projectModel.getModel().getSpatioTemporalIndex().getSpatialIndex(time));
+
+			String outFileName = String.format(outFilenameTemplate,time);
+			System.out.println("Relabeler TP="+time+": saving output image to "+outFileName);
+			IJ.save(ImageJFunctions.wrap(outImg, "Mastodon-CTC-export"), outFileName);
+
+			return time;
 		}
 	}
 }
