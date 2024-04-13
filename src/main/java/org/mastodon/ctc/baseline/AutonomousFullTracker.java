@@ -361,6 +361,7 @@ public class AutonomousFullTracker {
 						timeFrom );
 				System.out.println(args[0]+" time span is "+timeFrom+" - "+timeTill);
 			} else {
+				System.out.println("Starting dummy project over image series: "+args[0]);
 				imgProvider = new ImgProviders.ImgProviderFromDisk(
 						  args[0],
 						  new FinalVoxelDimensions("px",1.0,1.0,zToxRatio) );
@@ -375,6 +376,7 @@ public class AutonomousFullTracker {
 						new Model(),
 						SharedBigDataViewerData.fromDummyFilename(DUMMYXML),
 						new MamutProject("ontheflyCTCproject.mastodon") );
+				System.out.println(args[0]+" time span is "+timeFrom+" - "+timeTill+", voxel dims=1,1,"+zToxRatio);
 			}
 
 			clearGraph(projectModel);
