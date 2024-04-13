@@ -294,12 +294,26 @@ public class AutonomousFullTracker {
 			tt.put(trackID,quartet);
 			//System.out.println("Using trackID "+trackID+" from root "+root.getLabel()+" @ tp "+root.getTimepoint());
 			boolean tt_initTrack = false;
+			int lastLabeledTP = root.getTimepoint();
 
 			for (DepthFirstIteration.Step<Spot> step : DepthFirstIteration.forRoot(graph,root)) {
 				final Spot spot = step.node();
 				if (step.isFirstVisit() || step.isLeaf()) {
-					//label only once
+					//is gap?
+					if ((spot.getTimepoint() - lastLabeledTP) > 1) {
+						//yes, gap: finish previous track, start a new one, link to the previous one
+						tt.get(trackID)[2] = lastLabeledTP;
+						++trackID;
+						tt_initTrack = true;
+						System.out.println("Gap-parenting: label "+(trackID-1)+" @ "+lastLabeledTP
+								+" crossed a gap to label "+trackID+" @ "+spot.getTimepoint());
+					}
+
+					//labels only once - since we're on forward pass, or at the leaf
+					//(leaf is not considered to be either a forward or backward pass)
 					spot.setLabel(spot.getLabel()+" Track "+trackID);
+					lastLabeledTP = spot.getTimepoint();
+
 					if (tt_initTrack) {
 						int trackParentID = Integer.parseInt(spot.incomingEdges().get(0).getSource().getLabel().split(" ")[11]);
 						quartet = new Integer[] {trackID, spot.getTimepoint(), -1, trackParentID};
