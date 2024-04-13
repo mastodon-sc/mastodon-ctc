@@ -14,6 +14,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 
 import ij.IJ;
+import mpicbg.spim.data.sequence.FinalVoxelDimensions;
 import net.imagej.ImageJ;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
@@ -362,9 +363,9 @@ public class AutonomousFullTracker {
 			} else {
 				imgProvider = new ImgProviders.ImgProviderFromDisk(
 						  args[0],
-						  timeFrom );
+						  new FinalVoxelDimensions("px",1.0,1.0,zToxRatio) );
 				//dummy dataset, of the same size as the first real input image
-				RandomAccessibleInterval<?> img = imgProvider.getImage(timeFrom); //NB: will not read TP = timeFrom again
+				RandomAccessibleInterval<?> img = imgProvider.getImage(timeFrom); //NB: will be loaded from the drive...
 				final long xSize = img.dimension(0);
 				final long ySize = img.dimension(1);
 				final long zSize = img.numDimensions() > 2 ? img.dimension(2) : 1L;
