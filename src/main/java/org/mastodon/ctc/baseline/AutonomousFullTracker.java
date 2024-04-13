@@ -14,6 +14,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 
 import ij.IJ;
+import mpicbg.spim.data.sequence.FinalVoxelDimensions;
 import net.imagej.ImageJ;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
@@ -197,10 +198,10 @@ public class AutonomousFullTracker {
 		Spot spot = graph.vertexRef();
 
 		Map<Integer,Integer> distances = new HashMap<>(500);
+		final double[] pxSizes = imageSrc.getVoxelDimensions().dimensionsAsDoubleArray();
 		for (int t = timeFrom; t <= timeTill; ++t) {
 			findAndSetSpots((RandomAccessibleInterval)imageSrc.getImage(t),
-					  imageSrc.getVoxelDimensions().dimensionsAsDoubleArray(),
-					  t, graph,spot);
+					  pxSizes, t, graph,spot);
 
 			//analyze mutual spots distances
 			SpatialIndex<Spot> index = projectModel.getModel().getSpatioTemporalIndex().getSpatialIndex(t);
@@ -333,9 +334,10 @@ public class AutonomousFullTracker {
 	}
 
 	public static void main(String[] args, final Context ctx) {
-		if (args.length != 3 && args.length != 4) {
+		if (args.length != 4 && args.length != 5) {
 				System.out.println("Need three params in the following order:");
 				System.out.println("  FULL_path/project.mastodon or path/filenameTemplate.tif");
+				System.out.println("  ztoxratio (ignored in the input case of .mastodon)");
 				System.out.println("  first_time_point_to_track");
 				System.out.println("  last_time_point_to_track");
 				System.out.println("  [optional: FULL_path/save_result_into_this_project.mastodon]");
@@ -344,8 +346,9 @@ public class AutonomousFullTracker {
 				return;
 		}
 
-		final int timeFrom = Integer.parseInt(args[1]);
-		final int timeTill = Integer.parseInt(args[2]);
+		final float zToxRatio = Float.parseFloat(args[1]);
+		final int timeFrom = Integer.parseInt(args[2]);
+		final int timeTill = Integer.parseInt(args[3]);
 		ProjectModel projectModel;
 		ImgProviders.ImgProvider imgProvider;
 		try {
@@ -358,11 +361,12 @@ public class AutonomousFullTracker {
 						timeFrom );
 				System.out.println(args[0]+" time span is "+timeFrom+" - "+timeTill);
 			} else {
+				System.out.println("Starting dummy project over image series: "+args[0]);
 				imgProvider = new ImgProviders.ImgProviderFromDisk(
 						  args[0],
-						  timeFrom );
+						  new FinalVoxelDimensions("px",1.0,1.0,zToxRatio) );
 				//dummy dataset, of the same size as the first real input image
-				RandomAccessibleInterval<?> img = imgProvider.getImage(timeFrom); //NB: will not read TP = timeFrom again
+				RandomAccessibleInterval<?> img = imgProvider.getImage(timeFrom); //NB: will be loaded from the drive...
 				final long xSize = img.dimension(0);
 				final long ySize = img.dimension(1);
 				final long zSize = img.numDimensions() > 2 ? img.dimension(2) : 1L;
@@ -372,6 +376,7 @@ public class AutonomousFullTracker {
 						new Model(),
 						SharedBigDataViewerData.fromDummyFilename(DUMMYXML),
 						new MamutProject("ontheflyCTCproject.mastodon") );
+				System.out.println(args[0]+" time span is "+timeFrom+" - "+timeTill+", voxel dims=1,1,"+zToxRatio);
 			}
 
 			clearGraph(projectModel);
@@ -379,11 +384,11 @@ public class AutonomousFullTracker {
 			link(projectModel, distance, timeFrom,timeTill);
 			Map<?,Integer[]> tt = establishAndNoteTracks(projectModel);
 
-			if (args.length == 4) {
-				Path path = Paths.get(args[3]);
+			if (args.length == 5) {
+				Path path = Paths.get(args[4]);
 				if (!path.isAbsolute()) path = path.toAbsolutePath();
 				//
-				if (args[3].endsWith(".mastodon")) {
+				if (args[4].endsWith(".mastodon")) {
 					System.out.println("Saving tracked mastodon project: "+path);
 					ProjectSaver.saveProject(path.toFile(), projectModel);
 				} else {
@@ -401,7 +406,7 @@ public class AutonomousFullTracker {
 
 					final Collection<Callable<Integer>> tasks = new ArrayList<>(timeTill-timeFrom+1);
 					for (int time = timeFrom; time <= timeTill; ++time) {
-						tasks.add(new Relabeler(projectModel, imgProvider, args[3], time));
+						tasks.add(new Relabeler(projectModel, imgProvider, args[4], time));
 					}
 					Executors.newFixedThreadPool(IO_PARALLEL_WORKERS_COUNT).invokeAll(tasks);
 				}
