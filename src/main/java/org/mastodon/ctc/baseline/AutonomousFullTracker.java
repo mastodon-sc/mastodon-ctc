@@ -340,7 +340,7 @@ public class AutonomousFullTracker {
 				System.out.println("  last_time_point_to_track");
 				System.out.println("  [optional: FULL_path/save_result_into_this_project.mastodon]");
 				System.out.println("  [      or: output_path/filenameTemplate.tif, which would]");
-				System.out.println("  [          also create output_path/res_tracks.txt]");
+				System.out.println("  [          also create output_path/res_track.txt]");
 				return;
 		}
 
@@ -389,7 +389,7 @@ public class AutonomousFullTracker {
 				} else {
 					//da plan: iterate all TPs.for each( read, all spots relabel, write ) using threads
 					final String resFile= Paths
-							  .get( path.getParent().toString(), "res_tracks.txt" )
+							  .get( path.getParent().toString(), "res_track.txt" )
 							  .toString();
 					System.out.println("Writing file "+resFile);
 					try ( BufferedWriter bw = new BufferedWriter(new FileWriter(resFile)) ) {
