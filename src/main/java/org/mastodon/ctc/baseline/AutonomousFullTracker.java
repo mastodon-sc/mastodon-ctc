@@ -198,10 +198,10 @@ public class AutonomousFullTracker {
 		Spot spot = graph.vertexRef();
 
 		Map<Integer,Integer> distances = new HashMap<>(500);
+		final double[] pxSizes = imageSrc.getVoxelDimensions().dimensionsAsDoubleArray();
 		for (int t = timeFrom; t <= timeTill; ++t) {
 			findAndSetSpots((RandomAccessibleInterval)imageSrc.getImage(t),
-					  imageSrc.getVoxelDimensions().dimensionsAsDoubleArray(),
-					  t, graph,spot);
+					  pxSizes, t, graph,spot);
 
 			//analyze mutual spots distances
 			SpatialIndex<Spot> index = projectModel.getModel().getSpatioTemporalIndex().getSpatialIndex(t);
