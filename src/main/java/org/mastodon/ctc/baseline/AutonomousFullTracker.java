@@ -333,9 +333,10 @@ public class AutonomousFullTracker {
 	}
 
 	public static void main(String[] args, final Context ctx) {
-		if (args.length != 3 && args.length != 4) {
+		if (args.length != 4 && args.length != 5) {
 				System.out.println("Need three params in the following order:");
 				System.out.println("  FULL_path/project.mastodon or path/filenameTemplate.tif");
+				System.out.println("  ztoxratio (ignored in the input case of .mastodon)");
 				System.out.println("  first_time_point_to_track");
 				System.out.println("  last_time_point_to_track");
 				System.out.println("  [optional: FULL_path/save_result_into_this_project.mastodon]");
@@ -344,8 +345,9 @@ public class AutonomousFullTracker {
 				return;
 		}
 
-		final int timeFrom = Integer.parseInt(args[1]);
-		final int timeTill = Integer.parseInt(args[2]);
+		final float zToxRatio = Float.parseFloat(args[1]);
+		final int timeFrom = Integer.parseInt(args[2]);
+		final int timeTill = Integer.parseInt(args[3]);
 		ProjectModel projectModel;
 		ImgProviders.ImgProvider imgProvider;
 		try {
@@ -379,11 +381,11 @@ public class AutonomousFullTracker {
 			link(projectModel, distance, timeFrom,timeTill);
 			Map<?,Integer[]> tt = establishAndNoteTracks(projectModel);
 
-			if (args.length == 4) {
-				Path path = Paths.get(args[3]);
+			if (args.length == 5) {
+				Path path = Paths.get(args[4]);
 				if (!path.isAbsolute()) path = path.toAbsolutePath();
 				//
-				if (args[3].endsWith(".mastodon")) {
+				if (args[4].endsWith(".mastodon")) {
 					System.out.println("Saving tracked mastodon project: "+path);
 					ProjectSaver.saveProject(path.toFile(), projectModel);
 				} else {
@@ -401,7 +403,7 @@ public class AutonomousFullTracker {
 
 					final Collection<Callable<Integer>> tasks = new ArrayList<>(timeTill-timeFrom+1);
 					for (int time = timeFrom; time <= timeTill; ++time) {
-						tasks.add(new Relabeler(projectModel, imgProvider, args[3], time));
+						tasks.add(new Relabeler(projectModel, imgProvider, args[4], time));
 					}
 					Executors.newFixedThreadPool(IO_PARALLEL_WORKERS_COUNT).invokeAll(tasks);
 				}

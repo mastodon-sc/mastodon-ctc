@@ -42,8 +42,8 @@ public class AutonomousFullTrackerPlugin implements Command {
 		}
 
 		if (savepath == null || savepath.isEmpty() || savepath.startsWith("no"))
-			AutonomousFullTracker.main(new String[]{path,String.valueOf(from),String.valueOf(till)}, ctx);
+			AutonomousFullTracker.main(new String[]{path,String.valueOf(ztoxratio),String.valueOf(from),String.valueOf(till)}, ctx);
 		else
-			AutonomousFullTracker.main(new String[]{path,String.valueOf(from),String.valueOf(till), savepath}, ctx);
+			AutonomousFullTracker.main(new String[]{path,String.valueOf(ztoxratio),String.valueOf(from),String.valueOf(till), savepath}, ctx);
 	}
 }
