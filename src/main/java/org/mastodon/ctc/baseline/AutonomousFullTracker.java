@@ -377,7 +377,10 @@ public class AutonomousFullTracker {
 				System.out.println(args[0]+" time span is "+timeFrom+" - "+timeTill);
 			} else {
 				System.out.println("Starting dummy project over image series: "+args[0]);
-				if (timeTill == -1) timeTill = findLatestTimepointOnDisk(args[0]);
+				if (timeTill == -1) {
+					timeTill = findLatestTimepointOnDisk(args[0]);
+					System.out.println("Auto-discovered sequence last tp = "+timeTill);
+				}
 				imgProvider = new ImgProviders.ImgProviderFromDisk(
 						  args[0],
 						  new FinalVoxelDimensions("px",1.0,1.0,zToxRatio) );
