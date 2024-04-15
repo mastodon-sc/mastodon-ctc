@@ -3,6 +3,7 @@ package org.mastodon.ctc.baseline;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
@@ -362,7 +363,7 @@ public class AutonomousFullTracker {
 
 		final float zToxRatio = Float.parseFloat(args[1]);
 		final int timeFrom = Integer.parseInt(args[2]);
-		final int timeTill = Integer.parseInt(args[3]);
+		int timeTill = Integer.parseInt(args[3]);
 		ProjectModel projectModel;
 		ImgProviders.ImgProvider imgProvider;
 		try {
@@ -376,6 +377,7 @@ public class AutonomousFullTracker {
 				System.out.println(args[0]+" time span is "+timeFrom+" - "+timeTill);
 			} else {
 				System.out.println("Starting dummy project over image series: "+args[0]);
+				if (timeTill == -1) timeTill = findLatestTimepointOnDisk(args[0]);
 				imgProvider = new ImgProviders.ImgProviderFromDisk(
 						  args[0],
 						  new FinalVoxelDimensions("px",1.0,1.0,zToxRatio) );
@@ -473,5 +475,38 @@ public class AutonomousFullTracker {
 
 			return time;
 		}
+	}
+
+	public static int findLatestTimepointOnDisk(final String filenameTemplate) {
+		int tp = 0;
+		boolean tpExists = true;
+		int step = 50;
+
+		//iterates forward until the first failure
+		while (tpExists) {
+			tp += step;
+			tpExists = Files.exists( Paths.get( String.format(filenameTemplate, tp) ) );
+		}
+
+		//disecting in the last searched "section"/"step"
+		while (step != 0) {
+			if (step > 0) {
+				step /= tpExists ? 2 : -2;
+			} else {
+				step /= tpExists ? -2 : 2;
+			}
+			tp += step;
+			tpExists = Files.exists( Paths.get( String.format(filenameTemplate, tp) ) );
+		}
+
+		//safety... (ugly, I know... just covers rounding issues etc.)
+		tp += 2;
+		tpExists = Files.exists( Paths.get( String.format(filenameTemplate, tp) ) );
+		while (!tpExists && tp > 0) {
+			tp -= 1;
+			tpExists = Files.exists( Paths.get( String.format(filenameTemplate, tp) ) );
+		}
+
+		return tp;
 	}
 }
