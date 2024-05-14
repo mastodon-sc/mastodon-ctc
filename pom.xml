@@ -9,16 +9,16 @@
 	</parent>
 
 	<groupId>org.mastodon</groupId>
-	<artifactId>mastodon-ctc</artifactId>
-	<version>0.1.4-SNAPSHOT</version>
+	<artifactId>mastodon-ctc-baseline</artifactId>
+	<version>0.0.9</version>
 
 	<organization>
 		<name>Mastodon Science</name>
 		<url>http://github.com/mastodon-sc</url>
 	</organization>
 
-	<name>Mastodon Plugin for Import/Export into the CellTrackingChallenge Format</name>
-	<description>Mastodon plugins to foster communication between Mastodon and CellTrackingChallenge</description>
+	<name>Fiji Plugin to run Mastodon Baseline tracking on the CellTrackingChallenge format data</name>
+	<description>A Fiji plugin to foster communication between Mastodon and CellTrackingChallenge</description>
 	<url>https://github.com/mastodon-sc/mastodon-ctc</url>
 	<inceptionYear>2019</inceptionYear>
 
@@ -46,8 +46,7 @@
 
 	<contributors>
 		<contributor>
-			<name>Alex Herbert</name>
-			<url>https://github.com/aherbert</url>
+			<name>none</name>
 		</contributor>
 	</contributors>
 
@@ -156,17 +155,6 @@
 			<groupId>net.celltrackingchallenge</groupId>
 			<artifactId>CTC-measures</artifactId>
 			<version>1.0.3</version>
-			<!-- Duplicate classes detected by scijava-pom's use of the enforcer plugin:
-
-			  Mastodon using BioFormats
-			  org.mastodon:mastodon:jar:1.0.0-beta-28
-			  + sc.fiji:bigdataviewer_fiji:jar:6.2.4
-			  +- sc.fiji:SPIM_Registration:jar:5.0.25
-			  |  +- ome:formats ...
-
-			  CTC-measures using:
-			  sc.fiji:simplified-io:jar:1.0.1
-			-->
 			<exclusions>
 				<exclusion>
 					<groupId>loci</groupId>
