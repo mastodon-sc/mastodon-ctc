@@ -428,13 +428,11 @@ public class AutonomousFullTracker {
 						tasks.add(new Relabeler(projectModel, imgProvider, args[4], time));
 					}
 					Executors.newFixedThreadPool(IO_PARALLEL_WORKERS_COUNT).invokeAll(tasks);
+					System.out.println("DONE ALL.");
 				}
 			} else {
 				System.out.println("NOT saving the tracked project");
 			}
-
-			ctx.dispose();
-			System.exit(0);
 		} catch (SpimDataException | IOException | InterruptedException  e) {
 			throw new RuntimeException(e);
 		}
