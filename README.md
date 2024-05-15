@@ -1,5 +1,9 @@
 ![build status](https://api.travis-ci.com/CellTrackingChallenge/CTC-FijiPlugins.svg?branch=master)
 
+The CellTrackingChallenge Mastodon Baseline
+-------------------------------------------
+[...one can find here](https://github.com/CellTrackingChallenge/mastodon-ctc?tab=readme-ov-file#the-celltrackingchallenge-mastodon-baseline)
+
 Welcome
 -------
 This is a repository with Java source codes of the [Fiji](http://fiji.sc) tools related to the [Cell Tracking Challenge](http://www.celltrackingchallenge.net)s
