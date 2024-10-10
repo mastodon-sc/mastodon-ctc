@@ -55,15 +55,15 @@ import org.scijava.ui.behaviour.util.RunnableAction;
 @Plugin( type = MamutPlugin.class )
 public class IoPoints_Plugins extends AbstractContextual implements MamutPlugin
 {
-	private static final String IMPORT_FROM_IMAGES = "[imports] import from instance segmentation";
+	private static final String IMPORT_FROM_IMAGES = "[import] import from instance segmentation";
 
-	private static final String POINTS_EXPORT_3COLS = "[exports] export spots as 3col points";
-	private static final String POINTS_IMPORT_3COLS = "[imports] import spots from 3col points";
-	private static final String POINTS_EXPORT_4COLS = "[exports] export spots as 4col points";
-	private static final String POINTS_IMPORT_4COLS = "[imports] import spots from 4col points";
+	private static final String POINTS_EXPORT_3COLS = "[export] export spots as 3col points";
+	private static final String POINTS_IMPORT_3COLS = "[import] import spots from 3col points";
+	private static final String POINTS_EXPORT_4COLS = "[export] export spots as 4col points";
+	private static final String POINTS_IMPORT_4COLS = "[import] import spots from 4col points";
 
-	private static final String TRACKS_EXPORT_PLAINTXT = "[exports] export tracks as txt file";
-	private static final String TRACKS_IMPORT_PLAINTXT = "[imports] import tracks from txt file";
+	private static final String TRACKS_EXPORT_PLAINTXT = "[export] export tracks as txt file";
+	private static final String TRACKS_IMPORT_PLAINTXT = "[import] import tracks from txt file";
 
 	private static final String[] IMPORT_FROM_IMAGES_KEYS = { "not mapped" };
 
