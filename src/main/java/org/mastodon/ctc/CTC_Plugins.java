@@ -31,9 +31,8 @@ package org.mastodon.ctc;
 import static org.mastodon.app.ui.ViewMenuBuilder.item;
 import static org.mastodon.app.ui.ViewMenuBuilder.menu;
 
-import java.io.File;
-import java.util.Collections;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -41,7 +40,6 @@ import org.mastodon.app.ui.ViewMenuBuilder;
 import org.mastodon.mamut.plugin.MamutPlugin;
 import org.mastodon.mamut.KeyConfigScopes;
 import org.mastodon.mamut.ProjectModel;
-import org.mastodon.mamut.model.Model;
 import org.mastodon.ui.keymap.KeyConfigContexts;
 
 import org.scijava.log.LogService;
@@ -77,8 +75,8 @@ public class CTC_Plugins extends AbstractContextual implements MamutPlugin
 	private static final Map< String, String > menuTexts = new HashMap<>();
 	static
 	{
-		menuTexts.put( CTC_IMPORT, "Import from CTC format" );
-		menuTexts.put( CTC_EXPORT, "Export to CTC format" );
+		menuTexts.put( CTC_IMPORT, "Import from CellTrackingChallenge" );
+		menuTexts.put( CTC_EXPORT, "Export to CellTrackingChallenge" );
 		menuTexts.put( CTC_TRA_CHECKER, "Review TRA annotation" );
 		menuTexts.put( CTC_TRA_ADJUSTER, "Auto-adjust TRA annotation" );
 	}
@@ -88,14 +86,22 @@ public class CTC_Plugins extends AbstractContextual implements MamutPlugin
 	@Override
 	public List< ViewMenuBuilder.MenuItem > getMenuItems()
 	{
-		return Collections.singletonList( menu( "Plugins",
-			menu( "Cell Tracking Challenge",
-				item( CTC_IMPORT ),
-				item( CTC_EXPORT ),
-				item( CTC_TRA_CHECKER ),
-				item( CTC_TRA_ADJUSTER )
+		final ArrayList<ViewMenuBuilder.MenuItem> menus = new ArrayList<>(2);
+		menus.add( menu( "File",
+			menu("Import",
+				item(CTC_IMPORT)
+			),
+			menu( "Export",
+				item(CTC_EXPORT)
 			)
 		) );
+		menus.add( menu( "Plugins",
+			menu("Cell Tracking Challenge",
+				item(CTC_TRA_CHECKER),
+				item(CTC_TRA_ADJUSTER)
+			)
+		) );
+		return menus;
 	}
 
 	/** Command descriptions for all provided commands */

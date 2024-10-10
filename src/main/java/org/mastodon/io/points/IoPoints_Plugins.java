@@ -31,8 +31,8 @@ package org.mastodon.io.points;
 import static org.mastodon.app.ui.ViewMenuBuilder.item;
 import static org.mastodon.app.ui.ViewMenuBuilder.menu;
 
-import java.util.Collections;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -82,10 +82,10 @@ public class IoPoints_Plugins extends AbstractContextual implements MamutPlugin
 	{
 		menuTexts.put( IMPORT_FROM_IMAGES, "Import from instance segmentation" );
 
-		menuTexts.put( POINTS_EXPORT_3COLS, "Export to 3-column files" );
-		menuTexts.put( POINTS_IMPORT_3COLS, "Import from 3-column file" );
-		menuTexts.put( POINTS_EXPORT_4COLS, "Export to 4-column file" );
-		menuTexts.put( POINTS_IMPORT_4COLS, "Import from 4-column file" );
+		menuTexts.put( POINTS_EXPORT_3COLS, "Export to 3-column files (x,y,z)" );
+		menuTexts.put( POINTS_IMPORT_3COLS, "Import from 3-column file (x,y,z)" );
+		menuTexts.put( POINTS_EXPORT_4COLS, "Export to 4-column file (x,y,z,t)" );
+		menuTexts.put( POINTS_IMPORT_4COLS, "Import from 4-column file (x,y,z,t)" );
 
 		menuTexts.put( TRACKS_EXPORT_PLAINTXT, "Export to plain text file" );
 		menuTexts.put( TRACKS_IMPORT_PLAINTXT, "Import from plain text file" );
@@ -96,19 +96,25 @@ public class IoPoints_Plugins extends AbstractContextual implements MamutPlugin
 	@Override
 	public List< ViewMenuBuilder.MenuItem > getMenuItems()
 	{
-		return Collections.singletonList( menu( "Plugins",
-			menu( "Imports",
+		final ArrayList<ViewMenuBuilder.MenuItem> menus = new ArrayList<>(2);
+		menus.add( menu( "File",
+			menu( "Import",
 				item( POINTS_IMPORT_3COLS ),
 				item( POINTS_IMPORT_4COLS ),
-				item( TRACKS_IMPORT_PLAINTXT ),
-				item( IMPORT_FROM_IMAGES )
+				item( TRACKS_IMPORT_PLAINTXT )
 			),
-			menu( "Exports",
+			menu( "Export",
 				item( POINTS_EXPORT_3COLS ),
 				item( POINTS_EXPORT_4COLS ),
 				item( TRACKS_EXPORT_PLAINTXT )
 			)
 		) );
+		menus.add( menu( "Plugins",
+			menu( "Cell Tracking Challenge",
+				item( IMPORT_FROM_IMAGES )
+			)
+		) );
+		return menus;
 	}
 
 	/** Command descriptions for all provided commands */
