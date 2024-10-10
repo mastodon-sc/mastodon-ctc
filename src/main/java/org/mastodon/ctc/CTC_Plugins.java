@@ -67,9 +67,9 @@ public class CTC_Plugins extends AbstractContextual implements MamutPlugin
 
 	private static final String[] CTC_IMPORT_KEYS = { "not mapped" };
 	private static final String[] CTC_EXPORT_KEYS = { "not mapped" };
-	private static final String[] CTC_TRA_CHECKER_KEYS = { "ctrl P" };
-	private static final String[] CTC_TRA_ADJUSTER_KEYS = { "ctrl O" };
-	private static final String[] CTC_TRA_ADJUSTER_NQ_KEYS = { "ctrl shift O", "ctrl shift S" };
+	private static final String[] CTC_TRA_CHECKER_KEYS = { "not mapped" };
+	private static final String[] CTC_TRA_ADJUSTER_KEYS = { "not mapped" };
+	private static final String[] CTC_TRA_ADJUSTER_NQ_KEYS = { "not mapped" };
 	//------------------------------------------------------------------------
 
 
