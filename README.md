@@ -16,7 +16,8 @@ Enabling update site in a new or existing Fiji installation:
 1. Click menus: 'Help' -> 'Update...'
 1. Click 'Manage update sites' in the opened 'ImageJ Updater' dialog
 1. Mark the 'Mastodon' and 'CellTrackingChallenge' checkboxes
-1. Click 'Close' to close the dialog
+1. Click 'Apply and Close' to close the dialog
+1. Click "Apply" to finish the Updater, and restart Fiji
 
 
 License
@@ -26,27 +27,27 @@ The tools are licensed with the [BSD 2-Clause License](https://choosealicense.co
 
 Notes
 ------
-Once installed, one can find the tools in the Mastodon, in the _Plugins_ menu.
+Once installed, one can find the tools in the Mastodon, in the _File_ and _Plugins_ menus.
 Contact (ulman při fi.muni.cz) for help on how to use it.
 
 
 # Instance segmentation importers
 ## Generic segmentation-only importer
-This importer was designed to extract spots from instance segmentation,
-and on-demand create links between segments (spots) that overlap significantly
+This importer was designed to extract spots from images showing instance segmentation,
+and on-demand create links between segments (spots) that *overlap significantly*
 in consecutive time points.
 
-One can find the dialog in Mastodon -> Plugins -> Imports -> Import from instance segmentation:
+One can find the dialog in Mastodon -> Plugins -> Cell Tracking Challenge -> Import from instance segmentation:
 
 ![general instance segmentation importer dialog window](doc/importerOfPureInstanceSegmentations.png)
 
 
 
 ## CTC-formatted segmentation and tracking importer
-This importer was designed to extract spots from instance segmentation,
-and create links between segments (spots) of the same label.
+This importer was designed to extract spots from images with instance segmentation,
+and create links between segments (spots) of the *same label*.
 
-One can find the dialog in Mastodon -> Plugins -> Cell Tracking Challenge -> Import from CTC format:
+One can find the dialog in Mastodon -> File -> Import -> Import from CellTrackingChallenge:
 
 ![CTC import main dialog window](doc/importer_mainDlg.png)
 
