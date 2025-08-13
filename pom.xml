@@ -5,141 +5,28 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>38.0.1</version>
+		<version>40.0.0</version>
 	</parent>
 
 	<groupId>org.mastodon</groupId>
 	<artifactId>mastodon-ctc</artifactId>
-	<version>0.1.5</version>
+	<version>0.1.5-SNAPSHOT</version>
 
+	<name>Mastodon plugins for Import/Export into the CellTrackingChallenge Format</name>
+	<description>Mastodon plugins to foster communication between Mastodon and CellTrackingChallenge.</description>
+	<url>https://github.com/mastodon-sc/mastodon-ctc</url>
+	<inceptionYear>2019</inceptionYear>
 	<organization>
 		<name>Mastodon Science</name>
 		<url>http://github.com/mastodon-sc</url>
 	</organization>
-
-	<name>Mastodon Plugin for Import/Export into the CellTrackingChallenge Format</name>
-	<description>Mastodon plugins to foster communication between Mastodon and CellTrackingChallenge</description>
-	<url>https://github.com/mastodon-sc/mastodon-ctc</url>
-	<inceptionYear>2019</inceptionYear>
-
 	<licenses>
 		<license>
 			<name>Simplified BSD License</name>
+			<url>https://opensource.org/licenses/BSD-2-Clause</url>
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
-
-	<developers>
-		<developer>
-			<id>xulman</id>
-			<name>Vladimir Ulman</name>
-			<email>ulman@fi.muni.cz</email>
-			<url>http://imagej.net/User:Ulman</url>
-			<organization>IT4Innovation TUO-VSB</organization>
-			<organizationUrl>http://www.it4i.cz/</organizationUrl>
-			<roles>
-				<role>lead</role>
-				<role>developer</role>
-			</roles>
-		</developer>
-	</developers>
-
-	<contributors>
-		<contributor>
-			<name>Alex Herbert</name>
-			<url>https://github.com/aherbert</url>
-		</contributor>
-	</contributors>
-
-	<mailingLists>
-		<mailingList>
-			<name>ImageJ Forum</name>
-			<archive>https://forum.image.sc/</archive>
-		</mailingList>
-	</mailingLists>
-
-	<!-- ====================================== -->
-
-	<scm>
-		<url>https://github.com/mastodon-sc/mastodon-ctc</url>
-		<tag>HEAD</tag>
-	</scm>
-	<issueManagement>
-		<system>GitHub Issues</system>
-		<url>https://github.com/mastodon-sc/mastodon-ctc/issues</url>
-	</issueManagement>
-	<ciManagement>
-		<system>None</system>
-	</ciManagement>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>pl.project13.maven</groupId>
-				<artifactId>git-commit-id-plugin</artifactId>
-				<version>4.9.10</version>
-				<executions>
-					<execution>
-						<phase>validate</phase>
-						<goals>
-							<goal>revision</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
-					<generateGitPropertiesFile>true</generateGitPropertiesFile>
-					<generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
-					<includeOnlyProperties>
-						<includeOnlyProperty>^git.build.(time|version)$</includeOnlyProperty>
-						<includeOnlyProperty>^git.commit.id.(abbrev|full)$</includeOnlyProperty>
-					</includeOnlyProperties>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-antrun-plugin</artifactId>
-				<executions>
-					<execution>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>run</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<target>
-						<!-- make sure no COMMITrev tag files are floating around from some previous runs -->
-						<!-- NB: this task is redundant whenever 'mvn clean' is executed... -->
-						<delete><fileset dir="${project.build.outputDirectory}" includes="COMMITrev_*" /></delete>
-						<touch file="${project.build.outputDirectory}/COMMITrev_${git.commit.id.abbrev}_${project.artifactId}" />
-					</target>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
-
-	<packaging>jar</packaging>
-
-	<!-- ====================================== -->
-
-	<properties>
-		<package-name>org.mastodon</package-name>
-
-		<license.licenseName>bsd_2</license.licenseName>
-		<license.projectName>mastodon-ctc</license.projectName>
-		<license.organizationName>Mastodon authors</license.organizationName>
-		<license.copyrightOwners>Vladimir Ulman</license.copyrightOwners>
-
-		<mastodon.version>1.0.0-beta-28</mastodon.version>
-	</properties>
-
-	<repositories>
-		<repository>
-			<id>scijava.public</id>
-			<url>https://maven.scijava.org/content/groups/public</url>
-		</repository>
-	</repositories>
 
 	<dependencies>
 		<dependency>
@@ -182,4 +69,115 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+
+	<mailingLists>
+		<mailingList>
+			<name>ImageJ Forum</name>
+			<archive>https://forum.image.sc/tag/mastodon</archive>
+		</mailingList>
+	</mailingLists>
+
+	<scm>
+		<connection>scm:git:https:github.com/mastodon-sc/mastodon-ctc</connection>
+		<developerConnection>scm:git:git@github.com:mastodon-sc/mastodon-ctc</developerConnection>
+		<tag>HEAD</tag>
+		<url>https://github.com/mastodon-sc/mastodon-ctc</url>
+	</scm>
+	<issueManagement>
+		<system>GitHub</system>
+		<url>https://github.com/mastodon-sc/mastodon-ctc/issues</url>
+	</issueManagement>
+	<ciManagement>
+		<system>GitHub Actions</system>
+		<url>https://github.com/mastodon-sc/mastodon-ctc/actions</url>
+	</ciManagement>
+
+	<properties>
+		<package-name>org.mastodon</package-name>
+		<license.licenseName>bsd_2</license.licenseName>
+		<license.projectName>CellTrackingChallenge plugins for Mastodon</license.projectName>
+		<license.organizationName>Mastodon authors</license.organizationName>
+		<license.copyrightOwners>Vladimir Ulman</license.copyrightOwners>
+
+		<mastodon.version>1.0.0-beta-34</mastodon.version>
+	</properties>
+
+	<developers>
+		<developer>
+			<id>xulman</id>
+			<name>Vladimir Ulman</name>
+			<email>ulman@fi.muni.cz</email>
+			<url>https://imagej.net/people/xulman</url>
+			<organization>IT4Innovations and CBIA and CEITEC</organization>
+			<organizationUrl>https://www.fi.muni.cz/~xulman/</organizationUrl>
+			<roles>
+				<role>lead</role>
+				<role>developer</role>
+			</roles>
+		</developer>
+	</developers>
+
+	<contributors>
+		<contributor>
+			<name>Alex Herbert</name>
+			<url>https://github.com/aherbert</url>
+			<properties>
+				<role>contributing developer</role>
+			</properties>
+		</contributor>
+	</contributors>
+
+	<repositories>
+		<repository>
+			<id>scijava.public</id>
+			<url>https://maven.scijava.org/content/groups/public</url>
+		</repository>
+	</repositories>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>pl.project13.maven</groupId>
+				<artifactId>git-commit-id-plugin</artifactId>
+				<version>4.9.10</version>
+				<executions>
+					<execution>
+						<phase>validate</phase>
+						<goals>
+							<goal>revision</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
+					<generateGitPropertiesFile>true</generateGitPropertiesFile>
+					<generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
+					<includeOnlyProperties>
+						<includeOnlyProperty>^git.build.(time|version)$</includeOnlyProperty>
+						<includeOnlyProperty>^git.commit.id.(abbrev|full)$</includeOnlyProperty>
+					</includeOnlyProperties>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<target>
+						<!-- make sure no COMMITrev tag files are floating around from some previous runs -->
+						<!-- NB: this task is redundant whenever 'mvn clean' is executed... -->
+						<delete><fileset dir="${project.build.outputDirectory}" includes="COMMITrev_*"/></delete>
+						<touch file="${project.build.outputDirectory}/COMMITrev_${git.commit.id.abbrev}_${project.artifactId}"/>
+					</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 </project>
