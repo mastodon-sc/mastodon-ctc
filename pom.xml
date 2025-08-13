@@ -38,17 +38,6 @@
 			<groupId>net.celltrackingchallenge</groupId>
 			<artifactId>CTC-measures</artifactId>
 			<version>1.0.3</version>
-			<!-- Duplicate classes detected by scijava-pom's use of the enforcer plugin:
-
-			  Mastodon using BioFormats
-			  org.mastodon:mastodon:jar:1.0.0-beta-28
-			  + sc.fiji:bigdataviewer_fiji:jar:6.2.4
-			  +- sc.fiji:SPIM_Registration:jar:5.0.25
-			  |  +- ome:formats ...
-
-			  CTC-measures using:
-			  sc.fiji:simplified-io:jar:1.0.1
-			-->
 			<exclusions>
 				<exclusion>
 					<groupId>loci</groupId>
@@ -56,6 +45,7 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		<!-- for the GUI progress bar -->
 		<dependency>
 			<groupId>org.jhotdraw</groupId>
 			<artifactId>jhotdraw</artifactId>
