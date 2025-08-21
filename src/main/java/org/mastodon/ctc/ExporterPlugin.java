@@ -38,6 +38,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import org.mastodon.mamut.io.exporter.labelimage.ExportLabelImageController;
+import org.mastodon.mamut.io.exporter.labelimage.config.LabelOptions;
 import org.scijava.log.LogService;
 import org.scijava.command.Command;
 import org.scijava.command.DynamicCommand;
@@ -112,6 +114,9 @@ extends DynamicCommand
 
 	@Parameter(label = "Export till this time point:", min="0")
 	Integer timeTill;
+
+	//@Parameter( label = "Export to this TIFF file:", required = false )
+	//File tiffFile;
 
 	final ArrayList<String> choices = new ArrayList<>(20);
 	void encodeImgSourceChoices()
@@ -467,6 +472,11 @@ extends DynamicCommand
 						(RandomAccessibleInterval)imgSource.getSource(time,0),outRawImgFilename);
 				if (doOutputTRAImages)
 					saver.addImgSaveRequestOrBlockUntilLessThan(2, outImg,outImgFilename);
+				//if ( tiffFile.isFile() )
+				//{
+				//ExportLabelImageController controller = new ExportLabelImageController( projectModel, this.getContext() );
+				//controller.saveLabelImageToFile( LabelOptions.BRANCH_SPOT_ID, tiffFile, false, 1, 0 );
+				//}
 			}
 			catch (InterruptedException e) {
 				this.cancel("cancel requested");
