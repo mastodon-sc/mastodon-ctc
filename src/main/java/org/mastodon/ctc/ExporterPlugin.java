@@ -38,6 +38,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import org.mastodon.ctc.util.MastodonTrackRecords;
 import org.mastodon.mamut.io.exporter.labelimage.ExportLabelImageController;
 import org.mastodon.mamut.io.exporter.labelimage.config.LabelOptions;
 import org.scijava.log.LogService;
@@ -76,7 +77,6 @@ import org.mastodon.collection.RefMaps;
 import org.mastodon.ctc.util.ButtonHandler;
 import org.mastodon.ctc.util.ParallelImgSaver;
 import org.mastodon.ctc.auxPlugins.TRAMarkersProvider;
-import net.celltrackingchallenge.measures.TrackRecords;
 
 @Plugin( type = Command.class, name = "CTC format exporter @ Mastodon" )
 public class ExporterPlugin <T extends NativeType<T> & RealType<T>>
@@ -280,7 +280,7 @@ extends DynamicCommand
 		final AffineTransform3D coordTransWorld2Img = coordTransImg2World.inverse();
 
 		//aux conversion data
-		final TrackRecords tracks = new TrackRecords();
+		final MastodonTrackRecords tracks = new MastodonTrackRecords( model );
 
 		//map: Mastodon's spotID to CTC's trackID
 		RefIntMap< Spot > knownTracks = RefMaps.createRefIntMap( modelGraph.vertices(), -1, 500 );
@@ -375,25 +375,13 @@ extends DynamicCommand
 					//
 					//and by re-setting backward links, new track will start just in the code below
 					countBackwardLinks = 0;
-
-					if (tracks.getStartTimeOfTrack( knownTracks.get(spot) ) == time)
-					{
-						//the track 'ID' would have been just starting here,
-						//re-starting really means to remove it first
-						tracks.removeTrack( knownTracks.get(spot) );
-						logService.trace(spot.getLabel()+": will supersede track ID "+knownTracks.get(spot));
-					}
-					else
-					{
-						logService.trace(spot.getLabel()+": will just leave the track ID "+knownTracks.get(spot));
-					}
 				}
 
 				//spot with no backward links?
 				if (countBackwardLinks == 0)
 				{
 					//start a new track
-					knownTracks.put( spot, tracks.startNewTrack(time) );
+					knownTracks.put( spot, tracks.startNewTrack( spot ) );
 					logService.trace(spot.getLabel()+": started track ID "+knownTracks.get(spot)+" at time "+spot.getTimepoint());
 				}
 				else //countBackwardLinks == 1
@@ -414,7 +402,7 @@ extends DynamicCommand
 						if (sRef.getTimepoint() > time && sRef.getTimepoint() <= timeTill)
 						if (knownTracks.get(sRef) == -1)
 						{
-							knownTracks.put(sRef, tracks.startNewTrack( sRef.getTimepoint(), knownTracks.get(spot) ) );
+							knownTracks.put( sRef, tracks.startNewTrack( sRef, knownTracks.get( spot ) ) );
 							logService.trace(sRef.getLabel()+": started track ID "+knownTracks.get(sRef)+" at time "+sRef.getTimepoint());
 						}
 					}
@@ -424,7 +412,7 @@ extends DynamicCommand
 						if (sRef.getTimepoint() > time && sRef.getTimepoint() <= timeTill)
 						if (knownTracks.get(sRef) == -1)
 						{
-							knownTracks.put(sRef, tracks.startNewTrack( sRef.getTimepoint(), knownTracks.get(spot) ) );
+							knownTracks.put( sRef, tracks.startNewTrack( sRef, knownTracks.get( spot ) ) );
 							logService.trace(sRef.getLabel()+": started track ID "+knownTracks.get(sRef)+" at time "+sRef.getTimepoint());
 						}
 					}
@@ -443,7 +431,7 @@ extends DynamicCommand
 						//no, start a new track for the follower
 						if (knownTracks.get(fRef) == -1)
 						{
-							knownTracks.put( fRef, tracks.startNewTrack( fRef.getTimepoint(), (setParentAfterGap ? knownTracks.get(spot) : 0) ) );
+							knownTracks.put( fRef, tracks.startNewTrack( fRef, ( setParentAfterGap ? knownTracks.get( spot ) : 0 ) ) );
 							logService.trace(fRef.getLabel()+": started track ID "+knownTracks.get(fRef)+" at time "+fRef.getTimepoint());
 						}
 					}
