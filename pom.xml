@@ -170,4 +170,74 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<packaging>jar</packaging>
+
+	<!-- ====================================== -->
+
+	<properties>
+		<package-name>org.mastodon</package-name>
+
+		<license.licenseName>bsd_2</license.licenseName>
+		<license.projectName>mastodon-ctc</license.projectName>
+		<license.organizationName>Mastodon authors</license.organizationName>
+		<license.copyrightOwners>Vladimir Ulman</license.copyrightOwners>
+
+		<mastodon.version>1.0.0-beta-28</mastodon.version>
+	</properties>
+
+	<repositories>
+		<repository>
+			<id>scijava.public</id>
+			<url>https://maven.scijava.org/content/groups/public</url>
+		</repository>
+	</repositories>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.mastodon</groupId>
+			<artifactId>mastodon</artifactId>
+			<version>${mastodon.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>net.celltrackingchallenge</groupId>
+			<artifactId>CTC-measures</artifactId>
+			<version>1.0.3</version>
+			<!-- Duplicate classes detected by scijava-pom's use of the enforcer plugin:
+
+			  Mastodon using BioFormats
+			  org.mastodon:mastodon:jar:1.0.0-beta-28
+			  + sc.fiji:bigdataviewer_fiji:jar:6.2.4
+			  +- sc.fiji:SPIM_Registration:jar:5.0.25
+			  |  +- ome:formats ...
+
+			  CTC-measures using:
+			  sc.fiji:simplified-io:jar:1.0.1
+			-->
+			<exclusions>
+				<exclusion>
+					<groupId>loci</groupId>
+					<artifactId>loci_plugins</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.jhotdraw</groupId>
+			<artifactId>jhotdraw</artifactId>
+			<version>7.6.0</version>
+		</dependency>
+
+        <dependency>
+            <groupId>org.mastodon</groupId>
+            <artifactId>mastodon-deep-lineage</artifactId>
+            <version>0.4.7</version>
+        </dependency>
+
+		<!-- for testing it... -->
+		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>imagej</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
 </project>
